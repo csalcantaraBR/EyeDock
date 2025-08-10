@@ -65,9 +65,9 @@ class ExoPlayerImpl(
     
     override fun snapshot(): ByteArray? {
         return try {
-            // Implementar snapshot usando ExoPlayer
-            // Esta é uma implementação simplificada
+            // Implementação básica de snapshot
             // Em produção, seria necessário capturar o frame atual do vídeo
+            // Por enquanto, retornamos null para indicar que não está implementado
             null
         } catch (e: Exception) {
             null
@@ -92,17 +92,10 @@ class ExoPlayerImpl(
     }
     
     private fun createMediaSource(uri: String, auth: Auth?): MediaSource {
+        // Usar ProgressiveMediaSource para todos os protocolos como fallback
         val dataSourceFactory = createDataSourceFactory(auth)
-        
-        return if (uri.startsWith("rtsp://")) {
-            // RTSP Media Source - usar ProgressiveMediaSource como fallback
-            ProgressiveMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(MediaItem.fromUri(uri))
-        } else {
-            // Progressive Media Source para outros protocolos
-            ProgressiveMediaSource.Factory(dataSourceFactory)
-                .createMediaSource(MediaItem.fromUri(uri))
-        }
+        return ProgressiveMediaSource.Factory(dataSourceFactory)
+            .createMediaSource(MediaItem.fromUri(uri))
     }
     
     private fun createDataSourceFactory(auth: Auth?): HttpDataSource.Factory {
@@ -125,6 +118,8 @@ class ExoPlayerImpl(
                 }
             }
     }
+
+
     
     fun isPlaying(): Boolean {
         return exoPlayer?.isPlaying == true

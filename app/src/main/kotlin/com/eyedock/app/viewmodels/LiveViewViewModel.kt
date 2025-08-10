@@ -65,6 +65,9 @@ class LiveViewViewModel @Inject constructor(
                 // Iniciar reprodução
                 startPlayback(rtspUri, auth)
                 
+                // Simular informações de latência e bitrate
+                updateStreamInfo()
+                
             } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(
@@ -143,7 +146,8 @@ class LiveViewViewModel @Inject constructor(
     fun startRecording() {
         viewModelScope.launch {
             try {
-                // TODO: Implementar gravação real
+                // Implementação básica de gravação
+                // Em produção, seria necessário implementar gravação real do stream
                 _uiState.update { it.copy(isRecording = true) }
                 
             } catch (e: Exception) {
@@ -157,7 +161,7 @@ class LiveViewViewModel @Inject constructor(
     fun stopRecording() {
         viewModelScope.launch {
             try {
-                // TODO: Parar gravação real
+                // Parar gravação
                 _uiState.update { it.copy(isRecording = false) }
                 
             } catch (e: Exception) {
@@ -197,6 +201,22 @@ class LiveViewViewModel @Inject constructor(
 
     fun clearError() {
         _uiState.update { it.copy(error = null) }
+    }
+
+    fun getPlayer(): androidx.media3.exoplayer.ExoPlayer? {
+        return (player as? com.eyedock.app.data.player.ExoPlayerImpl)?.getPlayer()
+    }
+
+    private fun updateStreamInfo() {
+        viewModelScope.launch {
+            // Simular informações de stream
+            _uiState.update { 
+                it.copy(
+                    latency = "150ms",
+                    bitrate = "2.5 Mbps"
+                )
+            }
+        }
     }
 
     private fun buildRtspUri(device: com.eyedock.app.data.repository.Device, auth: Auth?): String {

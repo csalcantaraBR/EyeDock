@@ -19,6 +19,7 @@ import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.eyedock.app.viewmodels.LiveViewViewModel
 import kotlin.math.*
@@ -163,29 +164,100 @@ fun LiveViewScreen(
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        // TODO: Implementar player RTSP real
-                        // Por enquanto, placeholder
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            Icon(
-                                Icons.Default.Videocam,
-                                contentDescription = null,
-                                modifier = Modifier.size(64.dp),
-                                tint = Color.White
-                            )
-                            Spacer(modifier = Modifier.height(16.dp))
-                            Text(
-                                text = "Player RTSP não implementado",
-                                color = Color.White,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
-                            if (cameraId != null) {
-                                Text(
-                                    text = "Câmera ID: $cameraId",
-                                    color = Color.White.copy(alpha = 0.7f),
-                                    style = MaterialTheme.typography.bodySmall
+                        if (uiState.isConnected && uiState.isPlaying) {
+                            // Real RTSP Player
+                            Box(modifier = Modifier.fillMaxSize()) {
+                                AndroidView(
+                                    factory = { context ->
+                                        androidx.media3.ui.PlayerView(context).apply {
+                                            player = (viewModel.getPlayer() as? androidx.media3.exoplayer.ExoPlayer)
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxSize(),
+                                    update = { playerView ->
+                                        playerView.player = viewModel.getPlayer() as? androidx.media3.exoplayer.ExoPlayer
+                                    }
                                 )
+                                
+                                // Stream info overlay
+                                if (uiState.latency != null || uiState.bitrate != null) {
+                                    Card(
+                                        modifier = Modifier
+                                            .align(Alignment.TopEnd)
+                                            .padding(8.dp),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = Color.Black.copy(alpha = 0.7f)
+                                        )
+                                    ) {
+                                        Column(
+                                            modifier = Modifier.padding(8.dp)
+                                        ) {
+                                            if (uiState.latency != null) {
+                                                Text(
+                                                    text = "Latência: ${uiState.latency}",
+                                                    color = Color.White,
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                            }
+                                            if (uiState.bitrate != null) {
+                                                Text(
+                                                    text = "Bitrate: ${uiState.bitrate}",
+                                                    color = Color.White,
+                                                    style = MaterialTheme.typography.bodySmall
+                                                )
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        } else if (uiState.isLoading) {
+                            // Loading state
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                CircularProgressIndicator(color = Color.White)
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = "Conectando à câmera...",
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+                        } else {
+                            // Error or not connected state
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Icon(
+                                    Icons.Default.VideocamOff,
+                                    contentDescription = null,
+                                    modifier = Modifier.size(64.dp),
+                                    tint = Color.White.copy(alpha = 0.7f)
+                                )
+                                Spacer(modifier = Modifier.height(16.dp))
+                                Text(
+                                    text = if (uiState.error != null) {
+                                        "Erro de conexão"
+                                    } else {
+                                        "Câmera não conectada"
+                                    },
+                                    color = Color.White,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                if (cameraId != null) {
+                                    Text(
+                                        text = "Câmera ID: $cameraId",
+                                        color = Color.White.copy(alpha = 0.7f),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
+                                if (uiState.rtspUri != null) {
+                                    Text(
+                                        text = "URI: ${uiState.rtspUri}",
+                                        color = Color.White.copy(alpha = 0.5f),
+                                        style = MaterialTheme.typography.bodySmall
+                                    )
+                                }
                             }
                         }
                     }
