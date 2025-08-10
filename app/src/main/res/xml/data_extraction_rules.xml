@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<data-extraction-rules>
+    <cloud-backup>
+        <!-- Exclude sensitive camera credentials and recordings -->
+        <exclude domain="sharedpref" path="camera_credentials.xml" />
+        <exclude domain="database" path="cameras.db" />
+        <exclude domain="file" path="recordings/" />
+        <exclude domain="file" path="snapshots/" />
+        
+        <!-- Include app preferences that are safe to backup -->
+        <include domain="sharedpref" path="app_preferences.xml" />
+        <include domain="sharedpref" path="ui_settings.xml" />
+    </cloud-backup>
+    
+    <device-transfer>
+        <!-- Exclude all sensitive data from device transfer -->
+        <exclude domain="sharedpref" path="camera_credentials.xml" />
+        <exclude domain="database" path="cameras.db" />
+        <exclude domain="file" path="recordings/" />
+        <exclude domain="file" path="snapshots/" />
+        <exclude domain="file" path="thumbnails/" />
+        
+        <!-- Include only non-sensitive preferences -->
+        <include domain="sharedpref" path="app_preferences.xml" />
+        <include domain="sharedpref" path="ui_settings.xml" />
+    </device-transfer>
+</data-extraction-rules>

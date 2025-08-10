@@ -1,0 +1,262 @@
+/**
+ * Configurações de teste para o projeto EyeDock
+ * Aplicar este arquivo nos módulos que precisam de testes
+ */
+
+android {
+    testOptions {
+        unitTests {
+            includeAndroidResources = true
+            returnDefaultValues = true
+            
+            all {
+                // Configurações JUnit 5
+                useJUnitPlatform()
+                
+                // JVM args para performance
+                jvmArgs '-XX:MaxPermSize=256m'
+                
+                // Configurar timeout para testes
+                systemProperty 'junit.jupiter.execution.timeout.default', '60s'
+                systemProperty 'junit.jupiter.execution.timeout.test', '30s'
+                
+                // Configurações para Robolectric
+                systemProperty 'robolectric.enabledSdks', '26,29,33'
+                systemProperty 'robolectric.offline', 'true'
+                
+                // Configurações de logging para testes
+                systemProperty 'org.slf4j.simpleLogger.defaultLogLevel', 'warn'
+                
+                // Configurações para testes de rede
+                systemProperty 'test.network.timeout', '5000'
+                systemProperty 'test.camera.mock.ip', '192.168.1.100'
+                
+                testLogging {
+                    events "passed", "skipped", "failed", "standardOut", "standardError"
+                    outputs.upToDateWhen { false }
+                    showStandardStreams = false
+                    showCauses = true
+                    showExceptions = true
+                    showStackTraces = true
+                    
+                    // Configurar filtros para diferentes tipos de teste
+                    def testType = project.findProperty('testType') ?: 'all'
+                    if (testType == 'unit') {
+                        includeCategories 'com.eyedock.test.categories.UnitTest'
+                    } else if (testType == 'integration') {
+                        includeCategories 'com.eyedock.test.categories.IntegrationTest'
+                    }
+                }
+                
+                finalizedBy jacocoTestReport
+            }
+        }
+        
+        animationsDisabled = true
+        
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
+        
+        managedDevices {
+            devices {
+                pixel2api30(com.android.build.api.dsl.ManagedVirtualDevice) {
+                    device = "Pixel 2"
+                    apiLevel = 30
+                    systemImageSource = "aosp-atd"
+                }
+                pixel6api33(com.android.build.api.dsl.ManagedVirtualDevice) {
+                    device = "Pixel 6"
+                    apiLevel = 33
+                    systemImageSource = "aosp"
+                }
+            }
+            
+            groups {
+                phoneGroup {
+                    targetDevices.add(devices.pixel2api30)
+                    targetDevices.add(devices.pixel6api33)
+                }
+            }
+        }
+    }
+    
+    // Configurações de sourceSets para testes
+    sourceSets {
+        test {
+            java.srcDirs += 'src/test/kotlin'
+            resources.srcDirs += 'src/test/resources'
+        }
+        
+        androidTest {
+            java.srcDirs += 'src/androidTest/kotlin'
+            resources.srcDirs += 'src/androidTest/resources'
+        }
+        
+        // Source set para testes compartilhados
+        testShared {
+            java.srcDirs = ['src/testShared/kotlin']
+            resources.srcDirs = ['src/testShared/resources']
+        }
+        
+        test.java.srcDirs += testShared.java.srcDirs
+        androidTest.java.srcDirs += testShared.java.srcDirs
+    }
+    
+    packagingOptions {
+        pickFirst '**/META-INF/LICENSE*'
+        pickFirst '**/META-INF/NOTICE*'
+        exclude 'META-INF/DEPENDENCIES'
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/LICENSE.txt'
+        exclude 'META-INF/NOTICE'
+        exclude 'META-INF/NOTICE.txt'
+        exclude 'META-INF/AL2.0'
+        exclude 'META-INF/LGPL2.1'
+    }
+}
+
+// Configuração do JaCoCo para cobertura de código
+jacoco {
+    toolVersion = "0.8.8"
+}
+
+tasks.register('jacocoTestReport', JacocoReport) {
+    dependsOn 'testDebugUnitTest'
+    
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
+    
+    def fileFilter = [
+        '**/R.class',
+        '**/R$*.class',
+        '**/BuildConfig.*',
+        '**/Manifest*.*',
+        '**/*Test*.*',
+        '**/*$ViewInjector*.*',
+        '**/*$ViewBinder*.*',
+        '**/databinding/**/*.*',
+        '**/android/databinding/*Binding.*',
+        '**/androidx/databinding/*',
+        '**/BR.*',
+        '**/Dagger*.*',
+        '**/*_MembersInjector.*',
+        '**/*_Factory.*',
+        '**/*Module_*Factory.*',
+        '**/*_Provide*Factory.*',
+        '**/*_HiltComponents*.*',
+        '**/*Hilt_*.*'
+    ]
+    
+    def debugTree = fileTree(
+        dir: "${buildDir}/intermediates/classes/debug",
+        excludes: fileFilter
+    )
+    
+    def kotlinDebugTree = fileTree(
+        dir: "${buildDir}/tmp/kotlin-classes/debug",
+        excludes: fileFilter
+    )
+    
+    classDirectories.setFrom(files([debugTree, kotlinDebugTree]))
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+        'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec',
+        'outputs/code_coverage/debugAndroidTest/connected/*/coverage.ec'
+    ]))
+    
+    sourceDirectories.setFrom(files([
+        "${project.projectDir}/src/main/java",
+        "${project.projectDir}/src/main/kotlin"
+    ]))
+}
+
+// Task para verificar cobertura mínima
+tasks.register('jacocoTestCoverageVerification', JacocoCoverageVerification) {
+    dependsOn 'jacocoTestReport'
+    
+    violationRules {
+        rule {
+            limit {
+                counter = 'LINE'
+                value = 'COVEREDRATIO'
+                minimum = 0.85 // 85% para unit tests
+            }
+        }
+        
+        rule {
+            limit {
+                counter = 'BRANCH'
+                value = 'COVEREDRATIO'
+                minimum = 0.75 // 75% para branch coverage
+            }
+        }
+    }
+    
+    // Aplicar mesmos filtros do relatório
+    def fileFilter = [
+        '**/R.class',
+        '**/R$*.class',
+        '**/BuildConfig.*',
+        '**/Manifest*.*',
+        '**/*Test*.*',
+        '**/databinding/**/*.*',
+        '**/BR.*',
+        '**/Dagger*.*',
+        '**/*_MembersInjector.*',
+        '**/*_Factory.*',
+        '**/*Hilt_*.*'
+    ]
+    
+    classDirectories.setFrom(files([
+        fileTree(dir: "${buildDir}/intermediates/classes/debug", excludes: fileFilter),
+        fileTree(dir: "${buildDir}/tmp/kotlin-classes/debug", excludes: fileFilter)
+    ]))
+    
+    executionData.setFrom(fileTree(dir: buildDir, includes: [
+        'outputs/unit_test_code_coverage/debugUnitTest/testDebugUnitTest.exec'
+    ]))
+}
+
+// Configurações para testes de instrumentação
+tasks.withType(com.android.build.gradle.internal.tasks.DeviceProviderInstrumentTestTask) {
+    // Timeout para testes de instrumentação
+    testOptions.execution = 'ANDROIDX_TEST_ORCHESTRATOR'
+    systemProperty 'clearPackageData', 'true'
+}
+
+// Task personalizada para executar apenas testes unitários rápidos
+tasks.register('fastUnitTest', Test) {
+    dependsOn 'testDebugUnitTest'
+    
+    // Filtrar apenas testes marcados como @FastTest
+    useJUnitPlatform {
+        includeTags 'fast'
+    }
+    
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = false
+    }
+}
+
+// Task para executar testes de smoke
+tasks.register('smokeTest', Test) {
+    dependsOn 'testDebugUnitTest'
+    
+    useJUnitPlatform {
+        includeTags 'smoke'
+    }
+    
+    testLogging {
+        events "passed", "skipped", "failed"
+        showStandardStreams = false
+    }
+}
+
+// Configuração para benchmark tests
+if (project.name == 'app') {
+    android {
+        testBuildType = "release"
+    }
+}

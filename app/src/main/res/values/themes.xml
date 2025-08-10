@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Base application theme using basic Material Light theme -->
+    <style name="Theme.EyeDock" parent="android:Theme.Material.Light.NoActionBar" />
+    
+    <!-- Splash screen theme -->
+    <style name="Theme.EyeDock.Splash" parent="Theme.EyeDock">
+        <item name="android:windowBackground">@android:color/holo_blue_bright</item>
+    </style>
+</resources>

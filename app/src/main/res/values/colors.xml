@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Basic colors -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+    
+    <!-- Primary colors -->
+    <color name="seed">#2196F3</color>
+    <color name="primary_container">#BBDEFB</color>
+    <color name="on_primary_container">#0D47A1</color>
+    
+    <!-- Secondary colors -->
+    <color name="secondary">#FF9800</color>
+    <color name="on_secondary">#FFFFFF</color>
+    
+    <!-- Error colors -->
+    <color name="error">#F44336</color>
+    <color name="on_error">#FFFFFF</color>
+    
+    <!-- Surface colors -->
+    <color name="surface">#FFFFFF</color>
+    <color name="on_surface">#000000</color>
+    <color name="surface_variant">#F5F5F5</color>
+    
+    <!-- Legacy colors for compatibility -->
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    
+    <!-- EyeDock theme colors (fallback) -->
+    <color name="eyedock_primary">#2196F3</color>
+    <color name="eyedock_surface">#FFFFFF</color>
+    <color name="eyedock_error">#F44336</color>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Internal app storage for temporary files -->
+    <files-path name="internal_files" path="." />
+    
+    <!-- Cache directory for thumbnails and temporary media -->
+    <cache-path name="cache_files" path="." />
+    
+    <!-- External storage via SAF only - no direct file paths -->
+    <!-- All external file access should go through Storage Access Framework -->
+</paths>
