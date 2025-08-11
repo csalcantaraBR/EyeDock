@@ -63,7 +63,8 @@ fun EyeDockNavigation(navController: NavHostController) {
                 onNavigateBack = { navController.popBackStack() },
                 onNavigateToLiveView = { cameraId ->
                     navController.navigate("live_view/$cameraId")
-                }
+                },
+                onNavigateToAddCamera = { navController.navigate("add_camera") }
             )
         }
         

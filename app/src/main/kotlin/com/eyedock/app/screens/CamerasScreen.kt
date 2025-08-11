@@ -10,6 +10,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 
@@ -17,7 +18,8 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun CamerasScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToLiveView: (String) -> Unit
+    onNavigateToLiveView: (String) -> Unit,
+    onNavigateToAddCamera: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -26,6 +28,11 @@ fun CamerasScreen(
                 navigationIcon = {
                     IconButton(onClick = onNavigateBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = onNavigateToAddCamera) {
+                        Icon(Icons.Default.Add, contentDescription = "Add Camera")
                     }
                 }
             )
@@ -47,20 +54,11 @@ fun CamerasScreen(
                 )
             }
             
-            // Placeholder cameras
-            items(sampleCameras) { camera ->
-                CameraItem(
-                    camera = camera,
-                    onCameraClick = { onNavigateToLiveView(camera.id) },
-                    onEditClick = { /* TODO: Edit camera */ },
-                    onDeleteClick = { /* TODO: Delete camera */ }
-                )
-            }
-            
+            // Show empty state for production
             item {
-                if (sampleCameras.isEmpty()) {
-                    EmptyState()
-                }
+                EmptyState(
+                    onAddCameraClick = onNavigateToAddCamera
+                )
             }
         }
     }
@@ -68,7 +66,7 @@ fun CamerasScreen(
 
 @Composable
 fun CameraItem(
-    camera: SampleCamera,
+    camera: Camera,
     onCameraClick: () -> Unit,
     onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
@@ -137,7 +135,9 @@ fun CameraItem(
 }
 
 @Composable
-fun EmptyState() {
+fun EmptyState(
+    onAddCameraClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -159,22 +159,28 @@ fun EmptyState() {
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "Add your first camera to get started",
-            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+            textAlign = TextAlign.Center,
             color = MaterialTheme.colorScheme.onSurfaceVariant
         )
+        Spacer(modifier = Modifier.height(24.dp))
+        Button(
+            onClick = onAddCameraClick
+        ) {
+            Icon(
+                Icons.Default.Add,
+                contentDescription = null,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Add Camera")
+        }
     }
 }
 
-// Sample data
-data class SampleCamera(
+// Production camera data model
+data class Camera(
     val id: String,
     val name: String,
     val ip: String,
     val isOnline: Boolean
-)
-
-private val sampleCameras = listOf(
-    SampleCamera("1", "Front Door Camera", "192.168.1.100", true),
-    SampleCamera("2", "Backyard Camera", "192.168.1.101", false),
-    SampleCamera("3", "Garage Camera", "192.168.1.102", true)
 )

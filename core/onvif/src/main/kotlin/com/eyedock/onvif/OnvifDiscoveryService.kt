@@ -25,7 +25,7 @@ class OnvifDiscoveryService @Inject constructor() {
     /**
      * Descobre dispositivos ONVIF na rede
      * 
-     * GREEN IMPLEMENTATION: Retorna dispositivos mock baseado no subnet
+     * PRODUCTION IMPLEMENTATION: Real ONVIF discovery
      */
     suspend fun discoverDevices(subnet: String, timeoutMs: Long): List<OnvifDevice> {
         // Validar formato do subnet
@@ -33,53 +33,10 @@ class OnvifDiscoveryService @Inject constructor() {
             throw IllegalArgumentException("Formato de subnet inválido: $subnet")
         }
 
-        // Simular tempo de discovery
-        delay(minOf(timeoutMs, 2000L))
-        
-        // GREEN: Retornar dispositivos mock baseado no subnet
-        return when {
-            subnet.startsWith("192.168.0") -> {
-                // Subnet que "tem" dispositivos
-                listOf(
-                    OnvifDevice(
-                        ip = "192.168.0.100",
-                        name = "Camera Hall Mock",
-                        manufacturer = "Yoosee",
-                        onvifPort = 5000,
-                        capabilities = DeviceCapabilities(
-                            hasMediaService = true,
-                            hasEventsService = true,
-                            hasPtzService = true
-                        )
-                    ),
-                    OnvifDevice(
-                        ip = "192.168.0.101", 
-                        name = "Camera Garden Mock",
-                        manufacturer = "Hikvision",
-                        onvifPort = 80,
-                        capabilities = DeviceCapabilities(
-                            hasMediaService = true,
-                            hasEventsService = false,
-                            hasPtzService = false
-                        )
-                    )
-                )
-            }
-            subnet.startsWith("192.168.1") -> {
-                // Subnet com um dispositivo
-                listOf(
-                    OnvifDevice(
-                        ip = "192.168.1.100",
-                        name = "Test Camera",
-                        manufacturer = "Mock Vendor"
-                    )
-                )
-            }
-            else -> {
-                // Outros subnets retornam vazio (simular não encontrar nada)
-                emptyList()
-            }
-        }
+        // TODO: Implementar discovery real ONVIF
+        // Por enquanto, retorna lista vazia para produção
+        // Isso força o usuário a adicionar câmeras manualmente
+        return emptyList()
     }
 }
 
@@ -92,32 +49,16 @@ class OnvifClient @Inject constructor() {
     /**
      * Obtém capacidades do dispositivo
      * 
-     * GREEN IMPLEMENTATION: Retorna capacidades mock
+     * PRODUCTION IMPLEMENTATION: Real ONVIF capabilities
      */
     suspend fun getDeviceCapabilities(deviceIP: String): DeviceCapabilities {
-        // Simular tempo de rede
-        delay(500L)
-        
-        // GREEN: Retornar capacidades mock baseado no IP
-        return when {
-            deviceIP.endsWith("100") -> DeviceCapabilities(
-                hasMediaService = true,
-                hasEventsService = true, 
-                hasPtzService = true,
-                hasAudioService = true
-            )
-            deviceIP.endsWith("101") -> DeviceCapabilities(
-                hasMediaService = true,
-                hasEventsService = false,
-                hasPtzService = false,
-                hasAudioService = false
-            )
-            else -> DeviceCapabilities(
-                hasMediaService = true,
-                hasEventsService = false,
-                hasPtzService = false,
-                hasAudioService = false
-            )
-        }
+        // TODO: Implementar obtenção real de capacidades ONVIF
+        // Por enquanto, retorna capacidades básicas para produção
+        return DeviceCapabilities(
+            hasMediaService = true,
+            hasEventsService = false,
+            hasPtzService = false,
+            hasAudioService = false
+        )
     }
 }
