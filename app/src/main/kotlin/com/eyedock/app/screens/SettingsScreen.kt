@@ -1,31 +1,22 @@
 package com.eyedock.app.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
-    onNavigateBack: () -> Unit = {},
-    onOpenStoragePicker: () -> Unit = {},
-    modifier: Modifier = Modifier
+    onNavigateBack: () -> Unit
 ) {
-    var notificationsEnabled by remember { mutableStateOf(true) }
-    var autoUploadEnabled by remember { mutableStateOf(false) }
-    var retentionDays by remember { mutableIntStateOf(30) }
-    var recordingQuality by remember { mutableStateOf("1080p") }
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -38,368 +29,183 @@ fun SettingsScreen(
             )
         }
     ) { paddingValues ->
-        Column(
-            modifier = modifier
+        LazyColumn(
+            modifier = Modifier
                 .fillMaxSize()
                 .padding(paddingValues)
-                .verticalScroll(rememberScrollState())
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Storage Section
-            SettingsSection(
-                title = "Storage",
-                modifier = Modifier.testTag("storage_settings")
-            ) {
-                SettingsItem(
-                    title = "Storage Location",
-                    subtitle = "Choose where recordings are saved",
-                    icon = Icons.Default.Storage,
-                    onClick = onOpenStoragePicker
-                ) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = null)
-                }
-
-                CurrentStorageInfo()
-
-                SettingsItem(
-                    title = "Retention Policy",
-                    subtitle = "Automatically delete old recordings",
-                    icon = Icons.Default.Schedule
-                ) {
-                    DropdownMenuBox(
-                        selectedValue = "$retentionDays days",
-                        options = listOf("7 days", "30 days", "90 days", "Never"),
-                        onSelectionChange = { selection ->
-                            retentionDays = when (selection) {
-                                "7 days" -> 7
-                                "30 days" -> 30
-                                "90 days" -> 90
-                                else -> 0
-                            }
-                        }
-                    )
-                }
-            }
-
-            Divider()
-
-            // Recording Section
-            SettingsSection(title = "Recording") {
-                SettingsItem(
-                    title = "Default Quality",
-                    subtitle = "Video resolution for new cameras",
-                    icon = Icons.Default.VideoSettings
-                ) {
-                    DropdownMenuBox(
-                        selectedValue = recordingQuality,
-                        options = listOf("720p", "1080p", "4K"),
-                        onSelectionChange = { recordingQuality = it }
-                    )
-                }
-
-                SettingsItem(
-                    title = "Auto Upload",
-                    subtitle = "Upload recordings to cloud storage",
-                    icon = Icons.Default.CloudUpload
-                ) {
-                    Switch(
-                        checked = autoUploadEnabled,
-                        onCheckedChange = { autoUploadEnabled = it }
-                    )
-                }
-            }
-
-            Divider()
-
-            // Notifications Section
-            SettingsSection(title = "Notifications") {
-                SettingsItem(
-                    title = "Motion Alerts",
-                    subtitle = "Get notified when motion is detected",
-                    icon = Icons.Default.NotificationsActive
-                ) {
-                    Switch(
-                        checked = notificationsEnabled,
-                        onCheckedChange = { notificationsEnabled = it }
-                    )
-                }
-
-                if (notificationsEnabled) {
-                    SettingsItem(
-                        title = "Alert Sound",
-                        subtitle = "Play sound for notifications",
-                        icon = Icons.Default.VolumeUp,
-                        indent = true
-                    ) {
-                        Switch(
-                            checked = true,
-                            onCheckedChange = { /* TODO */ }
-                        )
-                    }
-
-                    SettingsItem(
-                        title = "Vibration",
-                        subtitle = "Vibrate for notifications",
-                        icon = Icons.Default.Vibration,
-                        indent = true
-                    ) {
-                        Switch(
-                            checked = true,
-                            onCheckedChange = { /* TODO */ }
-                        )
-                    }
-                }
-            }
-
-            Divider()
-
-            // Privacy Section
-            SettingsSection(title = "Privacy & Security") {
-                SettingsItem(
-                    title = "Privacy Policy",
-                    subtitle = "View our privacy policy",
-                    icon = Icons.Default.Policy,
-                    onClick = { /* TODO: Open privacy policy */ }
-                ) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = null)
-                }
-
-                SettingsItem(
-                    title = "Data Export",
-                    subtitle = "Export your data",
-                    icon = Icons.Default.FileDownload,
-                    onClick = { /* TODO: Export data */ }
-                ) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = null)
-                }
-
-                SettingsItem(
-                    title = "Clear Cache",
-                    subtitle = "Free up storage space",
-                    icon = Icons.Default.CleaningServices,
-                    onClick = { /* TODO: Clear cache */ }
-                ) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = null)
-                }
-            }
-
-            Divider()
-
-            // About Section
-            SettingsSection(title = "About") {
-                SettingsItem(
-                    title = "Version",
-                    subtitle = "EyeDock 1.0.0",
-                    icon = Icons.Default.Info
+            item {
+                Text(
+                    text = "App Settings",
+                    fontSize = 20.sp,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(bottom = 16.dp)
                 )
-
-                SettingsItem(
-                    title = "Diagnostics",
-                    subtitle = "View app diagnostics and logs",
-                    icon = Icons.Default.BugReport,
-                    onClick = { /* TODO: Open diagnostics */ }
-                ) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = null)
-                }
-
-                SettingsItem(
-                    title = "Help & Support",
-                    subtitle = "Get help or contact support",
-                    icon = Icons.Default.HelpOutline,
-                    onClick = { /* TODO: Open help */ }
-                ) {
-                    Icon(Icons.Default.ChevronRight, contentDescription = null)
-                }
             }
-
-            // Add some bottom padding
-            Spacer(modifier = Modifier.height(32.dp))
+            
+            // Camera Settings
+            item {
+                SettingsSection("Camera Settings")
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Default.Videocam,
+                    title = "Default Stream Quality",
+                    subtitle = "Main Stream",
+                    onClick = { /* TODO: Stream quality settings */ }
+                )
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Default.Timer,
+                    title = "Connection Timeout",
+                    subtitle = "30 seconds",
+                    onClick = { /* TODO: Timeout settings */ }
+                )
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Default.Security,
+                    title = "Security Settings",
+                    subtitle = "Encrypted storage",
+                    onClick = { /* TODO: Security settings */ }
+                )
+            }
+            
+            // Storage Settings
+            item {
+                SettingsSection("Storage")
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Default.Storage,
+                    title = "Recording Storage",
+                    subtitle = "Internal Storage",
+                    onClick = { /* TODO: Storage settings */ }
+                )
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Default.Delete,
+                    title = "Auto Cleanup",
+                    subtitle = "Enabled",
+                    onClick = { /* TODO: Cleanup settings */ }
+                )
+            }
+            
+            // Network Settings
+            item {
+                SettingsSection("Network")
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Default.Wifi,
+                    title = "Network Discovery",
+                    subtitle = "Enabled",
+                    onClick = { /* TODO: Discovery settings */ }
+                )
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Default.Refresh,
+                    title = "Auto Reconnect",
+                    subtitle = "Enabled",
+                    onClick = { /* TODO: Reconnect settings */ }
+                )
+            }
+            
+            // About
+            item {
+                SettingsSection("About")
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Default.Info,
+                    title = "App Version",
+                    subtitle = "1.0.0",
+                    onClick = { /* TODO: Version info */ }
+                )
+            }
+            
+            item {
+                SettingsItem(
+                    icon = Icons.Default.Help,
+                    title = "Help & Support",
+                    subtitle = "Documentation and FAQ",
+                    onClick = { /* TODO: Help screen */ }
+                )
+            }
         }
     }
 }
 
 @Composable
-fun SettingsSection(
-    title: String,
-    modifier: Modifier = Modifier,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Column(
-        modifier = modifier.padding(vertical = 8.dp)
-    ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)
-        )
-        
-        content()
-    }
+fun SettingsSection(title: String) {
+    Text(
+        text = title,
+        fontSize = 16.sp,
+        fontWeight = FontWeight.Medium,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+    )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsItem(
-    title: String,
-    subtitle: String? = null,
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    indent: Boolean = false,
-    onClick: (() -> Unit)? = null,
-    content: (@Composable () -> Unit)? = null
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit
 ) {
-    val itemModifier = if (onClick != null) {
-        Modifier.clickable { onClick() }
-    } else {
-        Modifier
-    }
-
-    Row(
-        modifier = itemModifier
-            .fillMaxWidth()
-            .padding(
-                start = if (indent) 32.dp else 16.dp,
-                end = 16.dp,
-                top = 12.dp,
-                bottom = 12.dp
-            ),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(16.dp)
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onClick
     ) {
-        Icon(
-            icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-
-        Column(
-            modifier = Modifier.weight(1f)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.bodyLarge
+            Icon(
+                icon,
+                contentDescription = null,
+                modifier = Modifier.size(24.dp),
+                tint = MaterialTheme.colorScheme.primary
             )
             
-            if (subtitle != null) {
+            Spacer(modifier = Modifier.width(16.dp))
+            
+            Column(
+                modifier = Modifier.weight(1f)
+            ) {
+                Text(
+                    text = title,
+                    fontSize = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
                 Text(
                     text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
+                    fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
-        }
-
-        content?.invoke()
-    }
-}
-
-@Composable
-fun CurrentStorageInfo() {
-    Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-            .testTag("storage_picker"),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant
-        )
-    ) {
-        Column(
-            modifier = Modifier.padding(16.dp)
-        ) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Current Storage",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Medium
-                )
-                
-                Text(
-                    text = "Connected",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-            }
             
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            Text(
-                text = "Internal Storage/EyeDock",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
+            Icon(
+                Icons.Default.ChevronRight,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant
             )
-            
-            Spacer(modifier = Modifier.height(8.dp))
-            
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "Free Space",
-                    style = MaterialTheme.typography.bodySmall
-                )
-                Text(
-                    text = "2.4 GB / 32 GB",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Medium
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(4.dp))
-            
-            LinearProgressIndicator(
-                progress = 0.85f,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun DropdownMenuBox(
-    selectedValue: String,
-    options: List<String>,
-    onSelectionChange: (String) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var expanded by remember { mutableStateOf(false) }
-
-    ExposedDropdownMenuBox(
-        expanded = expanded,
-        onExpandedChange = { expanded = !expanded },
-        modifier = modifier
-    ) {
-        OutlinedTextField(
-            value = selectedValue,
-            onValueChange = { },
-            readOnly = true,
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-            },
-            modifier = Modifier
-                .menuAnchor()
-                .widthIn(min = 120.dp),
-            textStyle = MaterialTheme.typography.bodyMedium
-        )
-
-        ExposedDropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            options.forEach { option ->
-                DropdownMenuItem(
-                    text = { Text(option) },
-                    onClick = {
-                        onSelectionChange(option)
-                        expanded = false
-                    }
-                )
-            }
         }
     }
 }

@@ -1,11 +1,14 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    id("kotlin-kapt")
-    id("dagger.hilt.android.plugin")
+    // id("kotlin-kapt")
+    // id("dagger.hilt.android.plugin")
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
+    id("jacoco")
 }
+
+// apply(from = "../gradle/test-config.gradle")
 
 android {
     namespace = "com.eyedock.app"
@@ -38,8 +41,8 @@ android {
         }
         
         release {
-            isMinifyEnabled = true
-            isShrinkResources = true
+            isMinifyEnabled = false
+            isShrinkResources = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
@@ -77,16 +80,18 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+    
+
 }
 
 dependencies {
-    // Core modules
-    implementation(project(":core:common"))
-    implementation(project(":core:onvif"))
-    implementation(project(":core:media"))
-    implementation(project(":core:storage"))
-    implementation(project(":core:events"))
-    implementation(project(":core:ui"))
+    // Core modules (commented out until they are properly implemented)
+    // implementation(project(":core:common"))
+    // implementation(project(":core:onvif"))
+    // implementation(project(":core:media"))
+    // implementation(project(":core:storage"))
+    // implementation(project(":core:events"))
+    // implementation(project(":core:ui"))
 
     // Android Core
     implementation("androidx.core:core-ktx:1.12.0")
@@ -108,12 +113,14 @@ dependencies {
     // Navigation
     implementation("androidx.navigation:navigation-compose:${rootProject.extra["navigationVersion"]}")
     
-    // Hilt Dependency Injection
-    implementation("com.google.dagger:hilt-android:${rootProject.extra["hiltVersion"]}")
-    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-    implementation("androidx.hilt:hilt-work:1.1.0")
-    kapt("com.google.dagger:hilt-compiler:${rootProject.extra["hiltVersion"]}")
-    kapt("androidx.hilt:hilt-compiler:1.1.0")
+    // Hilt Dependency Injection (temporarily disabled)
+    // implementation("com.google.dagger:hilt-android:${rootProject.extra["hiltVersion"]}")
+    // implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
+    // implementation("androidx.hilt:hilt-work:1.1.0")
+    // kapt("com.google.dagger:hilt-compiler:${rootProject.extra["hiltVersion"]}")
+    // kapt("androidx.hilt:hilt-compiler:1.1.0")
+    
+
 
     // WorkManager
     implementation("androidx.work:work-runtime-ktx:${rootProject.extra["workManagerVersion"]}")
@@ -159,8 +166,6 @@ dependencies {
 
     // Testing - Unit Tests
     testImplementation("junit:junit:4.13.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${rootProject.extra["junitVersion"]}")
-    testImplementation("org.junit.jupiter:junit-jupiter-engine:${rootProject.extra["junitVersion"]}")
     testImplementation("org.mockito:mockito-core:${rootProject.extra["mockitoVersion"]}")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
     testImplementation("org.jetbrains.kotlinx:kotlinx-coroutines-test:${rootProject.extra["coroutinesVersion"]}")
@@ -178,9 +183,9 @@ dependencies {
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     
-    // Testing - Hilt
-    androidTestImplementation("com.google.dagger:hilt-android-testing:${rootProject.extra["hiltVersion"]}")
-    kaptAndroidTest("com.google.dagger:hilt-compiler:${rootProject.extra["hiltVersion"]}")
+    // Testing - Hilt (temporarily disabled)
+    // androidTestImplementation("com.google.dagger:hilt-android-testing:${rootProject.extra["hiltVersion"]}")
+    // kaptAndroidTest("com.google.dagger:hilt-compiler:${rootProject.extra["hiltVersion"]}")
 
     // Debug Tools
     debugImplementation("androidx.compose.ui:ui-tooling")

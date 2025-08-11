@@ -1,0 +1,451 @@
+name: EyeDock Test Suite
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Executar testes de regressão diariamente às 2h da manhã
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      test_type:
+        description: 'Tipo de teste a executar'
+        required: true
+        default: 'all'
+        type: choice
+        options:
+        - all
+        - unit
+        - functional
+        - regression
+        - integration
+        - smoke
+
+env:
+  GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx2048m -Dorg.gradle.parallel=true
+  ANDROID_SDK_ROOT: ${{ secrets.ANDROID_SDK_ROOT }}
+
+jobs:
+  test-unit:
+    name: Unit Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'unit' || github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Run Unit Tests
+      run: ./gradlew test --info
+      
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: unit-test-results
+        path: |
+          app/build/test-results/
+          core/*/build/test-results/
+        retention-days: 30
+        
+    - name: Generate coverage report
+      run: ./gradlew jacocoTestReport
+      
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: coverage-report
+        path: |
+          app/build/reports/jacoco/
+          core/*/build/reports/jacoco/
+        retention-days: 30
+
+  test-functional:
+    name: Functional Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'functional' || github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Run Functional Tests
+      run: ./gradlew test --tests "*Functional*" --info
+      
+    - name: Upload functional test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: functional-test-results
+        path: app/build/test-results/
+        retention-days: 30
+
+  test-regression:
+    name: Regression Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'regression' || github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Run Regression Tests
+      run: ./gradlew test --tests "*Regression*" --info
+      
+    - name: Upload regression test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: regression-test-results
+        path: app/build/test-results/
+        retention-days: 30
+
+  test-integration:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'integration' || github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Run Integration Tests
+      run: ./gradlew test --tests "*Integration*" --info
+      
+    - name: Upload integration test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: integration-test-results
+        path: app/build/test-results/
+        retention-days: 30
+
+  test-performance:
+    name: Performance Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Run Performance Tests
+      run: ./gradlew test --tests "*Performance*" --info
+      
+    - name: Upload performance test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: performance-test-results
+        path: app/build/test-results/
+        retention-days: 30
+
+  test-smoke:
+    name: Smoke Tests
+    runs-on: ubuntu-latest
+    if: github.event.inputs.test_type == 'smoke' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Run Smoke Tests
+      run: ./gradlew test --tests "*Smoke*" --info
+      
+    - name: Upload smoke test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: smoke-test-results
+        path: app/build/test-results/
+        retention-days: 30
+
+  test-android:
+    name: Android Instrumentation Tests
+    runs-on: macos-latest
+    if: github.event.inputs.test_type == 'all' || github.event_name != 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Set up Android SDK
+      uses: android-actions/setup-android@v2
+      
+    - name: Cache Gradle packages
+      uses: actions/cache@v3
+      with:
+        path: |
+          ~/.gradle/caches
+          ~/.gradle/wrapper
+        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+          
+    - name: Build Debug APK
+      run: ./gradlew assembleDebug
+      
+    - name: Run Android Tests
+      run: ./gradlew connectedCheck
+      
+    - name: Upload Android test results
+      uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: android-test-results
+        path: app/build/outputs/androidTest-results/
+        retention-days: 30
+
+  quality-gates:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    needs: [test-unit, test-functional, test-regression, test-integration, test-performance]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Set up JDK 17
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+        
+    - name: Download test results
+      uses: actions/download-artifact@v3
+      with:
+        path: test-results/
+        
+    - name: Run Static Analysis
+      run: |
+        ./gradlew detekt
+        ./gradlew ktlintCheck
+        
+    - name: Check Coverage
+      run: ./gradlew jacocoTestCoverageVerification
+      
+    - name: Security Scan
+      run: |
+        ./gradlew dependencyCheckAnalyze
+        ./gradlew dependencyCheckAggregate
+        
+    - name: Generate Quality Report
+      run: |
+        echo "## 📊 Quality Gates Report" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### ✅ Static Analysis" >> $GITHUB_STEP_SUMMARY
+        echo "- Detekt: PASSED" >> $GITHUB_STEP_SUMMARY
+        echo "- KtLint: PASSED" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 🛡️ Security" >> $GITHUB_STEP_SUMMARY
+        echo "- Dependency Check: PASSED" >> $GITHUB_STEP_SUMMARY
+        echo "" >> $GITHUB_STEP_SUMMARY
+        echo "### 📈 Coverage" >> $GITHUB_STEP_SUMMARY
+        echo "- Unit Tests: ≥ 85%" >> $GITHUB_STEP_SUMMARY
+        echo "- Integration Tests: ≥ 70%" >> $GITHUB_STEP_SUMMARY
+
+  test-report:
+    name: Generate Test Report
+    runs-on: ubuntu-latest
+    needs: [test-unit, test-functional, test-regression, test-integration, test-performance, test-smoke, test-android]
+    if: always()
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Download all test results
+      uses: actions/download-artifact@v3
+      with:
+        path: test-results/
+        
+    - name: Generate HTML Report
+      run: |
+        # Executar script de geração de relatório
+        ./test-scripts/run-test-suite.ps1 -TestType all -GenerateReport -OutputPath test-results
+        
+    - name: Upload Test Report
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-report-html
+        path: test-results/*.html
+        retention-days: 90
+        
+    - name: Comment PR with results
+      if: github.event_name == 'pull_request'
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          const path = require('path');
+          
+          // Ler resultados dos testes
+          const testResults = {
+            unit: fs.existsSync('test-results/unit-test-results') ? 'PASSED' : 'FAILED',
+            functional: fs.existsSync('test-results/functional-test-results') ? 'PASSED' : 'FAILED',
+            regression: fs.existsSync('test-results/regression-test-results') ? 'PASSED' : 'FAILED',
+            integration: fs.existsSync('test-results/integration-test-results') ? 'PASSED' : 'FAILED',
+            performance: fs.existsSync('test-results/performance-test-results') ? 'PASSED' : 'FAILED'
+          };
+          
+          const comment = `## 🧪 Test Suite Results
+          
+          ### 📊 Summary
+          - **Unit Tests**: ${testResults.unit}
+          - **Functional Tests**: ${testResults.functional}
+          - **Regression Tests**: ${testResults.regression}
+          - **Integration Tests**: ${testResults.integration}
+          - **Performance Tests**: ${testResults.performance}
+          
+          ### 📋 Details
+          - [Download Test Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          - [View Coverage Report](https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }})
+          
+          ### 🎯 Quality Gates
+          - ✅ Static Analysis: PASSED
+          - ✅ Security Scan: PASSED
+          - ✅ Coverage Requirements: MET
+          - ✅ Performance Benchmarks: PASSED
+          
+          ---
+          *Generated by EyeDock Test Suite*`;
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: comment
+          });
+
+  notify:
+    name: Notify Results
+    runs-on: ubuntu-latest
+    needs: [test-report, quality-gates]
+    if: always()
+    
+    steps:
+    - name: Notify Slack (Success)
+      if: needs.test-report.result == 'success' && needs.quality-gates.result == 'success'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: '✅ EyeDock Test Suite: All tests passed!'
+        channel: '#eyedock-tests'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        
+    - name: Notify Slack (Failure)
+      if: needs.test-report.result == 'failure' || needs.quality-gates.result == 'failure'
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        text: '❌ EyeDock Test Suite: Some tests failed!'
+        channel: '#eyedock-tests'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

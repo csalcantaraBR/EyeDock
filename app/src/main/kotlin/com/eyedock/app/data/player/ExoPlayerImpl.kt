@@ -1,151 +1,123 @@
 package com.eyedock.app.data.player
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.view.Surface
-import com.eyedock.app.domain.interfaces.Player as DomainPlayer
-import com.eyedock.app.domain.model.Auth
+import android.view.View
 import androidx.media3.common.MediaItem
 import androidx.media3.common.Player
 import androidx.media3.exoplayer.ExoPlayer
-import androidx.media3.exoplayer.source.MediaSource
-import androidx.media3.exoplayer.source.ProgressiveMediaSource
-import androidx.media3.datasource.DefaultDataSource
-import androidx.media3.datasource.DefaultHttpDataSource
-import androidx.media3.datasource.HttpDataSource
-import androidx.media3.common.util.UnstableApi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
-import java.io.ByteArrayOutputStream
-import java.io.IOException
+import androidx.media3.ui.PlayerView
+import com.eyedock.app.domain.interfaces.Player as PlayerInterface
+import com.eyedock.app.domain.interfaces.PlayerState
+import com.eyedock.app.domain.interfaces.PlayerEventListener
+import com.eyedock.app.domain.interfaces.StreamStats
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
+import javax.inject.Singleton
 
-@UnstableApi
-class ExoPlayerImpl(
+@Singleton
+class ExoPlayerImpl @Inject constructor(
     private val context: Context
-) : DomainPlayer {
+) : PlayerInterface {
     
     private var exoPlayer: ExoPlayer? = null
-    private var currentUri: String? = null
-    private var currentAuth: Auth? = null
+    private var playerView: PlayerView? = null
+    private var eventListener: PlayerEventListener? = null
+    private val streamStatsFlow = MutableStateFlow(StreamStats())
     
-    override fun play(uri: String, auth: Auth?) {
-        currentUri = uri
-        currentAuth = auth
-        
-        try {
-            // Criar ou reutilizar ExoPlayer
-            if (exoPlayer == null) {
-                exoPlayer = ExoPlayer.Builder(context)
-                    .setMediaSourceFactory(createMediaSourceFactory(auth))
-                    .build()
-            }
-            
-            // Configurar media source
-            val mediaSource = createMediaSource(uri, auth)
-            
-            // Preparar e reproduzir
-            exoPlayer?.apply {
-                setMediaSource(mediaSource)
-                prepare()
-                playWhenReady = true
-            }
-            
-        } catch (e: Exception) {
-            // Log error
+    override fun initialize() {
+        exoPlayer = ExoPlayer.Builder(context).build().apply {
+            addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    val state = when (playbackState) {
+                        Player.STATE_IDLE -> PlayerState.IDLE
+                        Player.STATE_BUFFERING -> PlayerState.BUFFERING
+                        Player.STATE_READY -> PlayerState.READY
+                        Player.STATE_ENDED -> PlayerState.ENDED
+                        else -> PlayerState.ERROR
+                    }
+                    eventListener?.onPlayerStateChanged(state)
+                }
+                
+                override fun onPlayerError(error: androidx.media3.common.PlaybackException) {
+                    eventListener?.onError(error.message ?: "Unknown error")
+                }
+                
+                override fun onIsPlayingChanged(isPlaying: Boolean) {
+                    if (isPlaying) {
+                        eventListener?.onFirstFrame()
+                    }
+                }
+            })
         }
+        
+        playerView = PlayerView(context).apply {
+            player = exoPlayer
+        }
+    }
+    
+    override fun setStreamUrl(url: String, username: String?, password: String?) {
+        val mediaItem = if (username != null && password != null) {
+            // TODO: Implementar autenticação RTSP
+            MediaItem.fromUri(url)
+        } else {
+            MediaItem.fromUri(url)
+        }
+        
+        exoPlayer?.setMediaItem(mediaItem)
+        exoPlayer?.prepare()
+    }
+    
+    override fun play() {
+        exoPlayer?.play()
+    }
+    
+    override fun pause() {
+        exoPlayer?.pause()
     }
     
     override fun stop() {
-        exoPlayer?.apply {
-            stop()
-            clearMediaItems()
-        }
+        exoPlayer?.stop()
     }
     
-    override fun snapshot(): ByteArray? {
-        return try {
-            // Implementação básica de snapshot
-            // Em produção, seria necessário capturar o frame atual do vídeo
-            // Por enquanto, retornamos null para indicar que não está implementado
-            null
-        } catch (e: Exception) {
-            null
-        }
-    }
-    
-    fun getPlayer(): ExoPlayer? = exoPlayer
-    
-    fun setSurface(surface: Surface) {
-        exoPlayer?.setVideoSurface(surface)
-    }
-    
-    fun release() {
+    override fun release() {
         exoPlayer?.release()
         exoPlayer = null
+        playerView = null
     }
     
-    private fun createMediaSourceFactory(auth: Auth?): MediaSource.Factory {
-        val dataSourceFactory = createDataSourceFactory(auth)
-        
-        return ProgressiveMediaSource.Factory(dataSourceFactory)
+    override fun getPlayerView(): View {
+        return playerView ?: throw IllegalStateException("Player not initialized")
     }
     
-    private fun createMediaSource(uri: String, auth: Auth?): MediaSource {
-        // Usar ProgressiveMediaSource para todos os protocolos como fallback
-        val dataSourceFactory = createDataSourceFactory(auth)
-        return ProgressiveMediaSource.Factory(dataSourceFactory)
-            .createMediaSource(MediaItem.fromUri(uri))
+    override fun setEventListener(listener: PlayerEventListener) {
+        this.eventListener = listener
     }
     
-    private fun createDataSourceFactory(auth: Auth?): HttpDataSource.Factory {
-        return DefaultHttpDataSource.Factory()
-            .setConnectTimeoutMs(10000) // 10 segundos timeout
-            .setReadTimeoutMs(10000)
-            .setAllowCrossProtocolRedirects(true)
-            .apply {
-                if (auth != null) {
-                    setDefaultRequestProperties(
-                        mapOf(
-                            "Authorization" to "Basic ${
-                                android.util.Base64.encodeToString(
-                                    "${auth.username}:${auth.password}".toByteArray(),
-                                    android.util.Base64.NO_WRAP
-                                )
-                            }"
-                        )
-                    )
-                }
-            }
-    }
-
-
-    
-    fun isPlaying(): Boolean {
-        return exoPlayer?.isPlaying == true
+    override fun getPlayerState(): PlayerState {
+        return when (exoPlayer?.playbackState) {
+            Player.STATE_IDLE -> PlayerState.IDLE
+            Player.STATE_BUFFERING -> PlayerState.BUFFERING
+            Player.STATE_READY -> if (exoPlayer?.isPlaying == true) PlayerState.PLAYING else PlayerState.PAUSED
+            Player.STATE_ENDED -> PlayerState.ENDED
+            else -> PlayerState.ERROR
+        }
     }
     
-    fun getCurrentPosition(): Long {
-        return exoPlayer?.currentPosition ?: 0L
+    override fun getStreamStats(): Flow<StreamStats> {
+        // TODO: Implementar coleta de estatísticas do stream
+        return streamStatsFlow
     }
     
-    fun getDuration(): Long {
-        return exoPlayer?.duration ?: 0L
+    override fun setBufferSize(bufferMs: Long) {
+        // TODO: Implementar configuração de buffer
     }
     
-    fun seekTo(position: Long) {
-        exoPlayer?.seekTo(position)
+    override fun setAudioEnabled(enabled: Boolean) {
+        exoPlayer?.volume = if (enabled) 1.0f else 0.0f
     }
     
-    fun setPlaybackSpeed(speed: Float) {
-        exoPlayer?.setPlaybackSpeed(speed)
-    }
-    
-    fun addListener(listener: Player.Listener) {
-        exoPlayer?.addListener(listener)
-    }
-    
-    fun removeListener(listener: Player.Listener) {
-        exoPlayer?.removeListener(listener)
+    override fun setVolume(volume: Float) {
+        exoPlayer?.volume = volume.coerceIn(0.0f, 1.0f)
     }
 }

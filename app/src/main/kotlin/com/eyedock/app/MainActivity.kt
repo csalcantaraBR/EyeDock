@@ -3,19 +3,26 @@ package com.eyedock.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.navigation.compose.rememberNavController
 import com.eyedock.app.navigation.EyeDockNavigation
 import com.eyedock.app.ui.theme.EyeDockTheme
-import dagger.hilt.android.AndroidEntryPoint
 
-@AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        
         setContent {
             EyeDockTheme {
-                EyeDockApp()
+                Surface(
+                    modifier = Modifier.fillMaxSize(),
+                    color = MaterialTheme.colorScheme.background
+                ) {
+                    EyeDockApp()
+                }
             }
         }
     }
@@ -23,6 +30,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun EyeDockApp() {
-    EyeDockNavigation()
+    val navController = rememberNavController()
+    EyeDockNavigation(navController)
 }
 

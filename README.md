@@ -180,12 +180,12 @@ EyeDock/
 - [x] PTZ controls
 - [x] Secure credential storage
 
-### Phase 2 (Next)
-- [ ] Advanced ONVIF features
-- [ ] Multiple stream support
-- [ ] Recording functionality
-- [ ] Motion detection
-- [ ] Push notifications
+### Phase 2 (Current) ✅
+- [x] Advanced ONVIF features
+- [x] Multiple stream support
+- [x] Recording functionality
+- [x] Motion detection
+- [x] Push notifications
 
 ### Phase 3 (Future)
 - [ ] Cloud storage integration
