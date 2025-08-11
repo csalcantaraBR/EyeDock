@@ -1,12 +1,17 @@
 name: 🚀 Teste Rápido
 
 on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
   workflow_dispatch:
 
 jobs:
   quick-test:
     name: Teste Rápido
     runs-on: ubuntu-latest
+    timeout-minutes: 5
     
     steps:
     - name: 📥 Checkout
@@ -18,12 +23,19 @@ jobs:
         java-version: '17'
         distribution: 'temurin'
         
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+        
     - name: 🧪 Testes Rápidos
+      timeout-minutes: 5
       run: |
         echo "🧪 Executando testes rápidos..."
         chmod +x ./gradlew
-        ./gradlew :app:testDebugUnitTest
+        ./gradlew :app:testDebugUnitTest --info
         
     - name: ✅ Sucesso
       run: |
         echo "✅ Testes concluídos com sucesso!"
+        echo "📋 Commit: ${{ github.sha }}"
+        echo "👤 Autor: ${{ github.actor }}"
+        echo "🔗 Build: #${{ github.run_number }}"
