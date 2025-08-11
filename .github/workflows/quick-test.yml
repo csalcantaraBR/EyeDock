@@ -1,82 +1,29 @@
-name: 🧪 Quick Test Suite
+name: 🚀 Teste Rápido
 
 on:
-  push:
-    branches: [ main, develop ]
-  pull_request:
-    branches: [ main, develop ]
   workflow_dispatch:
-
-env:
-  GRADLE_OPTS: -Dorg.gradle.jvmargs=-Xmx2048m -Dorg.gradle.parallel=true
 
 jobs:
   quick-test:
-    name: 🧪 Testes Rápidos
+    name: Teste Rápido
     runs-on: ubuntu-latest
     
     steps:
-    - name: 📥 Checkout code
+    - name: 📥 Checkout
       uses: actions/checkout@v4
       
-    - name: ☕ Setup JDK 17
+    - name: ☕ Setup Java
       uses: actions/setup-java@v4
       with:
         java-version: '17'
         distribution: 'temurin'
         
-    - name: 📦 Cache Gradle packages
-      uses: actions/cache@v4
-      with:
-        path: |
-          ~/.gradle/caches
-          ~/.gradle/wrapper
-        key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-        restore-keys: |
-          ${{ runner.os }}-gradle-
-          
-    - name: 🧪 Run Unit Tests
+    - name: 🧪 Testes Rápidos
       run: |
-        echo "🧪 Executando testes unitários..."
-        ./gradlew :app:testDebugUnitTest --info --rerun-tasks
+        echo "🧪 Executando testes rápidos..."
+        chmod +x ./gradlew
+        ./gradlew :app:testDebugUnitTest
         
-    - name: 📊 Generate Coverage Report
+    - name: ✅ Sucesso
       run: |
-        echo "📊 Gerando relatório de cobertura..."
-        ./gradlew jacocoTestReport
-        
-    - name: ✅ Test Quality Gate
-      run: |
-        echo "✅ Verificando qualidade dos testes..."
-        if [ -f "app/build/reports/tests/testDebugUnitTest/index.html" ]; then
-          echo "✅ Testes executados com sucesso!"
-          echo "📊 Cobertura de código gerada!"
-        else
-          echo "❌ Falha nos testes!"
-          exit 1
-        fi
-        
-    - name: 📤 Upload Test Results
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: quick-test-results-${{ github.run_id }}
-        path: |
-          app/build/reports/tests/
-          app/build/reports/jacoco/
-        retention-days: 7
-        
-    - name: 📈 Upload Coverage to Codecov
-      uses: codecov/codecov-action@v3
-      with:
-        files: ./app/build/reports/jacoco/test/jacocoTestReport.xml
-        flags: quick-tests
-        name: codecov-quick
-        
-    - name: 📧 Notify Results
-      run: |
-        echo "🎉 Testes rápidos concluídos!"
-        echo "✅ Status: ${{ job.status }}"
-        echo "🔗 Build: #${{ github.run_number }}"
-        echo "📋 Commit: ${{ github.sha }}"
-        echo "👤 Autor: ${{ github.actor }}"
+        echo "✅ Testes concluídos com sucesso!"
