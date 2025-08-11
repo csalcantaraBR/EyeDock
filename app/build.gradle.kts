@@ -1,14 +1,10 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
-    // id("kotlin-kapt")
-    // id("dagger.hilt.android.plugin")
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
     id("jacoco")
 }
-
-// apply(from = "../gradle/test-config.gradle")
 
 android {
     namespace = "com.eyedock.app"
@@ -35,7 +31,6 @@ android {
             applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
             
-            // Enable logging for debugging
             buildConfigField("boolean", "DEBUG_LOGGING", "true")
             buildConfigField("String", "LOG_TAG", "\"EyeDock\"")
         }
@@ -80,91 +75,60 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
-    
-
 }
 
 dependencies {
-    // Core modules (commented out until they are properly implemented)
-    // implementation(project(":core:common"))
-    // implementation(project(":core:onvif"))
-    // implementation(project(":core:media"))
-    // implementation(project(":core:storage"))
-    // implementation(project(":core:events"))
-    // implementation(project(":core:ui"))
-
-    // Android Core
+    // ===== CORE ANDROID =====
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:${rootProject.extra["lifecycleVersion"]}")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:${rootProject.extra["lifecycleVersion"]}")
     implementation("androidx.activity:activity-compose:1.8.2")
     implementation("androidx.core:core-splashscreen:1.0.1")
 
-    // Compose BOM
+    // ===== COMPOSE =====
     val composeBom = platform("androidx.compose:compose-bom:${rootProject.extra["composeBomVersion"]}")
     implementation(composeBom)
-    
-    // Compose
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.compose.material3:material3")
     implementation("androidx.compose.material:material-icons-extended")
     
-    // Navigation
+    // ===== NAVIGATION =====
     implementation("androidx.navigation:navigation-compose:${rootProject.extra["navigationVersion"]}")
     
-    // Hilt Dependency Injection (temporarily disabled)
-    // implementation("com.google.dagger:hilt-android:${rootProject.extra["hiltVersion"]}")
-    // implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
-    // implementation("androidx.hilt:hilt-work:1.1.0")
-    // kapt("com.google.dagger:hilt-compiler:${rootProject.extra["hiltVersion"]}")
-    // kapt("androidx.hilt:hilt-compiler:1.1.0")
-    
-
-
-    // WorkManager
-    implementation("androidx.work:work-runtime-ktx:${rootProject.extra["workManagerVersion"]}")
-
-    // Room Database
+    // ===== DATABASE =====
     implementation("androidx.room:room-runtime:${rootProject.extra["roomVersion"]}")
     implementation("androidx.room:room-ktx:${rootProject.extra["roomVersion"]}")
     ksp("androidx.room:room-compiler:${rootProject.extra["roomVersion"]}")
 
-    // Network
+    // ===== NETWORKING =====
     implementation("com.squareup.retrofit2:retrofit:${rootProject.extra["retrofitVersion"]}")
     implementation("com.squareup.retrofit2:converter-gson:${rootProject.extra["retrofitVersion"]}")
     implementation("com.squareup.okhttp3:okhttp:${rootProject.extra["okHttpVersion"]}")
     implementation("com.squareup.okhttp3:logging-interceptor:${rootProject.extra["okHttpVersion"]}")
 
-    // Camera & ML Kit
-    implementation("androidx.camera:camera-camera2:${rootProject.extra["cameraXVersion"]}")
-    implementation("androidx.camera:camera-lifecycle:${rootProject.extra["cameraXVersion"]}")
-    implementation("androidx.camera:camera-view:${rootProject.extra["cameraXVersion"]}")
-    implementation("com.google.mlkit:barcode-scanning:${rootProject.extra["mlKitVersion"]}")
-
-    // Media (ExoPlayer)
+    // ===== MEDIA =====
     implementation("androidx.media3:media3-exoplayer:${rootProject.extra["media3Version"]}")
     implementation("androidx.media3:media3-exoplayer-rtsp:${rootProject.extra["media3Version"]}")
     implementation("androidx.media3:media3-ui:${rootProject.extra["media3Version"]}")
     implementation("androidx.media3:media3-common:${rootProject.extra["media3Version"]}")
 
-    // Security
-    implementation("androidx.security:security-crypto:${rootProject.extra["securityVersion"]}")
+    // ===== CAMERA & ML =====
+    implementation("androidx.camera:camera-camera2:${rootProject.extra["cameraXVersion"]}")
+    implementation("androidx.camera:camera-lifecycle:${rootProject.extra["cameraXVersion"]}")
+    implementation("androidx.camera:camera-view:${rootProject.extra["cameraXVersion"]}")
+    implementation("com.google.mlkit:barcode-scanning:${rootProject.extra["mlKitVersion"]}")
 
-    // Coroutines
+    // ===== UTILITIES =====
+    implementation("androidx.security:security-crypto:${rootProject.extra["securityVersion"]}")
+    implementation("androidx.work:work-runtime-ktx:${rootProject.extra["workManagerVersion"]}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:${rootProject.extra["coroutinesVersion"]}")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-play-services:${rootProject.extra["coroutinesVersion"]}")
-
-    // JSON
     implementation("com.google.code.gson:gson:2.10.1")
-
-    // Permissions
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
-
-    // Image Loading (for thumbnails)
     implementation("io.coil-kt:coil-compose:2.5.0")
 
-    // Testing - Unit Tests
+    // ===== TESTING =====
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.mockito:mockito-core:${rootProject.extra["mockitoVersion"]}")
     testImplementation("org.mockito.kotlin:mockito-kotlin:5.2.1")
@@ -172,28 +136,21 @@ dependencies {
     testImplementation("com.google.truth:truth:${rootProject.extra["truthVersion"]}")
     testImplementation("androidx.arch.core:core-testing:2.2.0")
 
-    // Testing - Instrumentation Tests
     androidTestImplementation("androidx.test.ext:junit:${rootProject.extra["junitAndroidVersion"]}")
     androidTestImplementation("androidx.test.espresso:espresso-core:${rootProject.extra["espressoVersion"]}")
     androidTestImplementation("androidx.test.espresso:espresso-intents:${rootProject.extra["espressoVersion"]}")
     androidTestImplementation("androidx.test:runner:1.5.2")
     androidTestImplementation("androidx.test:rules:1.5.0")
-    
-    // Testing - Compose
     androidTestImplementation(composeBom)
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    
-    // Testing - Hilt (temporarily disabled)
-    // androidTestImplementation("com.google.dagger:hilt-android-testing:${rootProject.extra["hiltVersion"]}")
-    // kaptAndroidTest("com.google.dagger:hilt-compiler:${rootProject.extra["hiltVersion"]}")
 
-    // Debug Tools
+    // ===== DEBUG TOOLS =====
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
     debugImplementation("com.squareup.leakcanary:leakcanary-android:2.12")
 }
 
-// JaCoCo Configuration
+// ===== JACOCO CONFIGURATION =====
 jacoco {
     toolVersion = "0.8.11"
 }

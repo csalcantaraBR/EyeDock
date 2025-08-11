@@ -15,7 +15,9 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun AddCameraScreen(
     onNavigateBack: () -> Unit,
-    onNavigateToQrScan: () -> Unit
+    onNavigateToQrScan: () -> Unit,
+    onNavigateToManualSetup: () -> Unit,
+    onNavigateToNetworkDiscovery: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -59,16 +61,16 @@ fun AddCameraScreen(
                     Icon(
                         Icons.Default.QrCodeScanner,
                         contentDescription = null,
-                        modifier = Modifier.size(64.dp),
+                        modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Scan QR Code",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "Scan the QR code on your camera or its packaging",
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -80,7 +82,7 @@ fun AddCameraScreen(
             // Manual Entry
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { /* TODO: Implement manual entry */ }
+                onClick = onNavigateToManualSetup
             ) {
                 Column(
                     modifier = Modifier
@@ -91,16 +93,16 @@ fun AddCameraScreen(
                     Icon(
                         Icons.Default.Edit,
                         contentDescription = null,
-                        modifier = Modifier.size(64.dp),
+                        modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Manual Entry",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "Enter camera details manually",
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -112,7 +114,7 @@ fun AddCameraScreen(
             // Network Discovery
             Card(
                 modifier = Modifier.fillMaxWidth(),
-                onClick = { /* TODO: Implement network discovery */ }
+                onClick = onNavigateToNetworkDiscovery
             ) {
                 Column(
                     modifier = Modifier
@@ -123,16 +125,16 @@ fun AddCameraScreen(
                     Icon(
                         Icons.Default.Search,
                         contentDescription = null,
-                        modifier = Modifier.size(64.dp),
+                        modifier = Modifier.size(48.dp),
                         tint = MaterialTheme.colorScheme.primary
                     )
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Network Discovery",
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Medium
                     )
-                    Spacer(modifier = Modifier.height(8.dp))
+                    Spacer(modifier = Modifier.height(6.dp))
                     Text(
                         text = "Automatically find cameras on your network",
                         textAlign = androidx.compose.ui.text.style.TextAlign.Center,

@@ -10,6 +10,9 @@ import com.eyedock.app.screens.LiveViewScreen
 import com.eyedock.app.screens.CamerasScreen
 import com.eyedock.app.screens.SettingsScreen
 import com.eyedock.app.screens.QrScanScreen
+import com.eyedock.app.screens.ManualSetupScreen
+import com.eyedock.app.screens.NetworkDiscoveryScreen
+import com.eyedock.app.utils.Logger
 
 @Composable
 fun EyeDockNavigation(navController: NavHostController) {
@@ -33,7 +36,51 @@ fun EyeDockNavigation(navController: NavHostController) {
         composable("add_camera") {
             AddCameraScreen(
                 onNavigateBack = { navController.popBackStack() },
-                onNavigateToQrScan = { navController.navigate("qr_scan") }
+                onNavigateToQrScan = { navController.navigate("qr_scan") },
+                onNavigateToManualSetup = { navController.navigate("manual_setup") },
+                onNavigateToNetworkDiscovery = { navController.navigate("network_discovery") }
+            )
+        }
+        
+        // Setup manual
+        composable("manual_setup") {
+            ManualSetupScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onCameraAdded = { 
+                    // Navegar para a lista de câmeras após adicionar
+                    navController.navigate("cameras") {
+                        // Limpar o back stack para evitar voltar para a tela de adicionar
+                        popUpTo("main") { inclusive = false }
+                    }
+                }
+            )
+        }
+        
+        // Setup manual com IP pré-preenchido
+        composable("manual_setup/{cameraIp}") { backStackEntry ->
+            val cameraIp = backStackEntry.arguments?.getString("cameraIp")
+            ManualSetupScreen(
+                onNavigateBack = { navController.popBackStack() },
+                onCameraAdded = { 
+                    // Navegar para a lista de câmeras após adicionar
+                    navController.navigate("cameras") {
+                        // Limpar o back stack para evitar voltar para a tela de adicionar
+                        popUpTo("main") { inclusive = false }
+                    }
+                },
+                prefillIp = cameraIp
+            )
+        }
+        
+        // Network Discovery
+        composable("network_discovery") {
+            NetworkDiscoveryScreen(
+                onNavigateToAddCamera = { cameraIp ->
+                    // Navegar para setup manual com IP pré-preenchido
+                    Logger.d("Camera selected from network discovery: $cameraIp")
+                    navController.navigate("manual_setup/$cameraIp")
+                },
+                onNavigateBack = { navController.popBackStack() }
             )
         }
         

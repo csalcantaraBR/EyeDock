@@ -3,6 +3,8 @@ package com.eyedock.app.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -13,14 +15,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.eyedock.app.data.local.entity.CameraEntity
+import com.eyedock.app.viewmodels.CamerasViewModel
+import com.eyedock.app.viewmodels.CamerasUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CamerasScreen(
     onNavigateBack: () -> Unit,
     onNavigateToLiveView: (String) -> Unit,
-    onNavigateToAddCamera: () -> Unit
+    onNavigateToAddCamera: () -> Unit,
+    viewModel: CamerasViewModel = viewModel()
 ) {
+    val uiState by viewModel.uiState.collectAsState()
+    val cameras by viewModel.cameras.collectAsState()
+    
+    LaunchedEffect(Unit) {
+        viewModel.loadCameras()
+    }
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -38,27 +52,81 @@ fun CamerasScreen(
             )
         }
     ) { paddingValues ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(paddingValues)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            item {
-                Text(
-                    text = "Your Cameras",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(bottom = 16.dp)
-                )
+        when (val currentState = uiState) {
+            CamerasUiState.Loading -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator()
+                }
             }
             
-            // Show empty state for production
-            item {
-                EmptyState(
-                    onAddCameraClick = onNavigateToAddCamera
-                )
+            is CamerasUiState.Error -> {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(
+                            Icons.Default.Error,
+                            contentDescription = null,
+                            modifier = Modifier.size(64.dp),
+                            tint = MaterialTheme.colorScheme.error
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Text(
+                            text = currentState.message,
+                            color = MaterialTheme.colorScheme.error,
+                            textAlign = TextAlign.Center
+                        )
+                        Spacer(modifier = Modifier.height(16.dp))
+                        Button(onClick = { viewModel.loadCameras() }) {
+                            Text("Retry")
+                        }
+                    }
+                }
+            }
+            
+            else -> {
+                LazyColumn(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(16.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    item {
+                        Text(
+                            text = "Your Cameras",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(bottom = 16.dp)
+                        )
+                    }
+
+                    if (cameras.isEmpty()) {
+                        item {
+                            EmptyState(
+                                onAddCameraClick = onNavigateToAddCamera
+                            )
+                        }
+                    } else {
+                        items(cameras) { camera ->
+                            CameraItem(
+                                camera = camera,
+                                onCameraClick = { onNavigateToLiveView(camera.id.toString()) },
+                                onDeleteClick = { viewModel.deleteCamera(camera.id) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
@@ -66,9 +134,8 @@ fun CamerasScreen(
 
 @Composable
 fun CameraItem(
-    camera: Camera,
+    camera: CameraEntity,
     onCameraClick: () -> Unit,
-    onEditClick: () -> Unit,
     onDeleteClick: () -> Unit
 ) {
     Card(
@@ -84,51 +151,50 @@ fun CameraItem(
             Icon(
                 Icons.Default.Videocam,
                 contentDescription = null,
-                modifier = Modifier.size(48.dp),
-                tint = if (camera.isOnline) MaterialTheme.colorScheme.primary 
-                       else MaterialTheme.colorScheme.onSurfaceVariant
+                tint = if (camera.isOnline) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant
             )
             
-            Spacer(modifier = Modifier.width(16.dp))
+            Spacer(modifier = Modifier.width(12.dp))
             
             Column(
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     text = camera.name,
-                    fontSize = 16.sp,
                     fontWeight = FontWeight.Medium
                 )
                 Text(
-                    text = camera.ip,
+                    text = "${camera.protocol.uppercase()}://${camera.ip}:${camera.port}${camera.path}",
                     fontSize = 14.sp,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Icon(
-                        if (camera.isOnline) Icons.Default.Circle else Icons.Default.Circle,
-                        contentDescription = null,
-                        modifier = Modifier.size(8.dp),
-                        tint = if (camera.isOnline) MaterialTheme.colorScheme.primary 
-                               else MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.width(4.dp))
+                if (camera.manufacturer != null) {
                     Text(
-                        text = if (camera.isOnline) "Online" else "Offline",
+                        text = camera.manufacturer,
                         fontSize = 12.sp,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
             }
             
-            IconButton(onClick = onEditClick) {
-                Icon(Icons.Default.Edit, contentDescription = "Edit")
-            }
+            // Status indicator
+            Box(
+                modifier = Modifier
+                    .size(12.dp)
+                    .background(
+                        color = if (camera.isOnline) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
+                        shape = CircleShape
+                    )
+            )
+            
+            Spacer(modifier = Modifier.width(8.dp))
             
             IconButton(onClick = onDeleteClick) {
-                Icon(Icons.Default.Delete, contentDescription = "Delete")
+                Icon(
+                    Icons.Default.Delete,
+                    contentDescription = "Delete Camera",
+                    tint = MaterialTheme.colorScheme.error
+                )
             }
         }
     }
@@ -176,11 +242,3 @@ fun EmptyState(
         }
     }
 }
-
-// Production camera data model
-data class Camera(
-    val id: String,
-    val name: String,
-    val ip: String,
-    val isOnline: Boolean
-)
