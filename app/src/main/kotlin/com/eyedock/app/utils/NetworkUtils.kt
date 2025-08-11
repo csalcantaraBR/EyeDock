@@ -65,7 +65,7 @@ object NetworkUtils {
             Constants.CommonSubnets.HOME_NETWORK
             
         } catch (e: Exception) {
-            logger.e("Erro ao detectar subnet", e)
+            logger.e("Erro ao detectar subnet: ${e.message}")
             logger.w("Usando subnet padrão: ${Constants.CommonSubnets.HOME_NETWORK}")
             Constants.CommonSubnets.HOME_NETWORK
         }
@@ -162,7 +162,7 @@ object NetworkUtils {
             }
             
         } catch (e: Exception) {
-            logger.e("Erro ao validar dispositivo $ip", e)
+            logger.e("Erro ao validar dispositivo $ip: ${e.message}")
             false
         }
     }
@@ -245,7 +245,7 @@ object NetworkUtils {
             null
             
         } catch (e: Exception) {
-            logger.e("Erro ao procurar câmera", e)
+            logger.e("Erro ao procurar câmera: ${e.message}")
             null
         }
     }
@@ -263,11 +263,11 @@ object NetworkUtils {
     suspend fun testCameraConnectivity(ip: String): Boolean {
         return withContext(Dispatchers.IO) {
             try {
-                Logger.d("Testing camera connectivity for IP: $ip")
+                Logger.d("NetworkUtils", "Testing camera connectivity for IP: $ip")
                 
                 // First check if host is reachable
                 if (!isHostReachable(ip, Constants.PING_TIMEOUT_MS)) {
-                    Logger.d("Host $ip is not reachable")
+                    Logger.d("NetworkUtils", "Host $ip is not reachable")
                     return@withContext false
                 }
                 
@@ -288,20 +288,20 @@ object NetworkUtils {
                 for (port in rtspPorts) {
                     for (path in rtspPaths) {
                         val testUrl = "rtsp://$ip:$port$path"
-                        Logger.d("Testing RTSP URL: $testUrl")
+                        Logger.d("NetworkUtils", "Testing RTSP URL: $testUrl")
                         
                         if (testRtspConnection(ip, port, path)) {
-                            Logger.i("Valid camera found at $ip:$port$path")
+                            Logger.i("NetworkUtils", "Valid camera found at $ip:$port$path")
                             return@withContext true
                         }
                     }
                 }
                 
-                Logger.d("No valid RTSP stream found for IP: $ip")
+                Logger.d("NetworkUtils", "No valid RTSP stream found for IP: $ip")
                 false
                 
             } catch (e: Exception) {
-                Logger.e("Error testing camera connectivity for $ip", e)
+                Logger.e("NetworkUtils", "Error testing camera connectivity for $ip: ${e.message}")
                 false
             }
         }
@@ -345,10 +345,10 @@ object NetworkUtils {
                         (responseString.contains("200 OK") ||
                          responseString.contains("401 Unauthorized") ||
                          responseString.contains("404 Not Found"))) {
-                        Logger.d("Valid RTSP response received from $ip:$port$path")
+                        Logger.d("NetworkUtils", "Valid RTSP response received from $ip:$port$path")
                         return@withContext true
                     } else {
-                        Logger.d("Invalid RTSP response from $ip:$port$path: $responseString")
+                        Logger.d("NetworkUtils", "Invalid RTSP response from $ip:$port$path: $responseString")
                         return@withContext false
                     }
                 }
@@ -357,7 +357,7 @@ object NetworkUtils {
                 false
                 
             } catch (e: Exception) {
-                Logger.d("RTSP test failed for $ip:$port$path: ${e.message}")
+                Logger.d("NetworkUtils", "RTSP test failed for $ip:$port$path: ${e.message}")
                 false
             }
         }

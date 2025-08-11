@@ -1,72 +1,33 @@
 package com.eyedock.app.utils
 
 import android.util.Log
-import com.eyedock.app.BuildConfig
 
-/**
- * Centralized logging utility for the EyeDock application.
- * Provides consistent logging across the app with proper debug/release handling.
- */
 object Logger {
     
-    private const val TAG = "EyeDock"
-    
-    /**
-     * Log a debug message
-     */
-    fun d(message: String, tag: String = TAG) {
-        if (BuildConfig.DEBUG_LOGGING) {
-            Log.d(tag, message)
-        }
+    fun d(tag: String, message: String) {
+        Log.d(tag, message)
     }
     
-    /**
-     * Log an info message
-     */
-    fun i(message: String, tag: String = TAG) {
-        if (BuildConfig.DEBUG_LOGGING) {
-            Log.i(tag, message)
-        }
+    fun i(tag: String, message: String) {
+        Log.i(tag, message)
     }
     
-    /**
-     * Log a warning message
-     */
-    fun w(message: String, tag: String = TAG) {
+    fun w(tag: String, message: String) {
         Log.w(tag, message)
     }
     
-    /**
-     * Log an error message
-     */
-    fun e(message: String, throwable: Throwable? = null, tag: String = TAG) {
-        Log.e(tag, message, throwable)
+    fun e(tag: String, message: String) {
+        Log.e(tag, message)
     }
     
-    /**
-     * Log a verbose message
-     */
-    fun v(message: String, tag: String = TAG) {
-        if (BuildConfig.DEBUG_LOGGING) {
-            Log.v(tag, message)
-        }
+    fun withTag(tag: String): LoggerWithTag {
+        return LoggerWithTag(tag)
     }
     
-    /**
-     * Log with a specific component tag
-     */
-    fun withTag(component: String) = ComponentLogger(component)
-    
-    /**
-     * Component-specific logger
-     */
-    class ComponentLogger(private val component: String) {
-        private val tag = "$TAG-$component"
-        
-        fun d(message: String) = Logger.d(message, tag)
-        fun i(message: String) = Logger.i(message, tag)
-        fun w(message: String) = Logger.w(message, tag)
-        fun e(message: String, throwable: Throwable? = null) = Logger.e(message, throwable, tag)
-        fun v(message: String) = Logger.v(message, tag)
+    class LoggerWithTag(private val tag: String) {
+        fun d(message: String) = Logger.d(tag, message)
+        fun i(message: String) = Logger.i(tag, message)
+        fun w(message: String) = Logger.w(tag, message)
+        fun e(message: String) = Logger.e(tag, message)
     }
 }

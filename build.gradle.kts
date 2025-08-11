@@ -1,6 +1,10 @@
 // EyeDock - Root project build.gradle.kts (Complete for local testing)
 
 buildscript {
+    dependencies {
+        classpath("com.google.gms:google-services:4.4.0")
+    }
+    
     extra.apply {
         set("compileSdk", 34)
         set("minSdk", 26)

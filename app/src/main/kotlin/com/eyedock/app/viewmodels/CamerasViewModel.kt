@@ -41,7 +41,7 @@ class CamerasViewModel : ViewModel() {
                     _uiState.value = CamerasUiState.Success
                 }
             } catch (e: Exception) {
-                logger.e("Failed to load cameras", e)
+                logger.e("Failed to load cameras: ${e.message}")
                 _uiState.value = CamerasUiState.Error("${Constants.ErrorMessages.LOAD_FAILED}: ${e.message}")
             }
         }
@@ -57,7 +57,7 @@ class CamerasViewModel : ViewModel() {
                 cameraRepository.deleteCamera(cameraId)
                 logger.i("Camera deleted successfully")
             } catch (e: Exception) {
-                logger.e("Failed to delete camera with ID: $cameraId", e)
+                logger.e("Failed to delete camera with ID: $cameraId: ${e.message}")
                 // Handle error silently for now
                 // Could add error state handling here
             }

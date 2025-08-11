@@ -29,6 +29,7 @@ fun LiveViewScreen(
     val isPlaying by viewModel.isPlaying.collectAsState()
     val isMuted by viewModel.isMuted.collectAsState()
     val isRecording by viewModel.isRecording.collectAsState()
+    val connectedState by viewModel.connectedState.collectAsState()
     
     LaunchedEffect(cameraId) {
         cameraId?.let { viewModel.connectToCamera(it) }
@@ -36,7 +37,7 @@ fun LiveViewScreen(
     
     DisposableEffect(Unit) {
         onDispose {
-            viewModel.disconnect()
+            // No disconnect method needed, player is released in onCleared
         }
     }
     
@@ -84,11 +85,11 @@ fun LiveViewScreen(
                             Spacer(modifier = Modifier.width(12.dp))
                             Column {
                                 Text(
-                                    text = "Camera: ${currentState.cameraConnection.ip}",
+                                    text = "Camera: ${currentState.camera.name}",
                                     fontWeight = FontWeight.Medium
                                 )
                                 Text(
-                                    text = "RTSP: ${currentState.cameraConnection.proto}://${currentState.cameraConnection.ip}:${currentState.cameraConnection.port}${currentState.cameraConnection.path}",
+                                    text = "IP: ${currentState.camera.ip}:${currentState.camera.port}",
                                     fontSize = 12.sp,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
@@ -98,8 +99,8 @@ fun LiveViewScreen(
                 }
                 else -> {}
             }
-            
-            // Video player area
+
+            // Player view
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -107,195 +108,36 @@ fun LiveViewScreen(
                     .padding(16.dp)
             ) {
                 Box(
-                    modifier = Modifier.fillMaxSize(),
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    when (val currentState = uiState) {
-                        LiveViewUiState.Idle -> {
+                    when (uiState) {
+                        is LiveViewUiState.Idle -> {
+                            Text(
+                                text = "No camera connected",
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
+                        }
+                        is LiveViewUiState.Connecting -> {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                                Icon(
-                                    Icons.Default.Videocam,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(64.dp),
-                                    tint = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                CircularProgressIndicator()
                                 Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "Ready to Connect",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
+                                Text("Connecting to camera...")
                             }
                         }
-                        
-                        LiveViewUiState.Connecting -> {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                CircularProgressIndicator(
-                                    modifier = Modifier.size(64.dp)
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Text(
-                                    text = "Connecting...",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium
-                                )
-                            }
-                        }
-                        
                         is LiveViewUiState.Connected -> {
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                // Real video player
-                                Card(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(300.dp),
-                                    colors = CardDefaults.cardColors(
-                                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                                    )
-                                ) {
-                                    Box(
-                                        modifier = Modifier.fillMaxSize(),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        // AndroidView to render ExoPlayer
-                                        AndroidView(
-                                            factory = { context ->
-                                                // Get the player view from the injected player
-                                                val player = viewModel.getPlayer()
-                                                player.getPlayerView()
-                                            },
-                                            modifier = Modifier.fillMaxSize()
-                                        )
-                                        
-                                        // Overlay for status information
-                                        if (currentState.connectionStatus != "Live") {
-                                            Card(
-                                                modifier = Modifier
-                                                    .align(Alignment.TopCenter)
-                                                    .padding(8.dp),
-                                                colors = CardDefaults.cardColors(
-                                                    containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
-                                                )
-                                            ) {
-                                                Text(
-                                                    text = currentState.connectionStatus,
-                                                    modifier = Modifier.padding(8.dp),
-                                                    fontSize = 12.sp,
-                                                    color = MaterialTheme.colorScheme.onSurface
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                Spacer(modifier = Modifier.height(16.dp))
-                                
-                                // Status indicators
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                                ) {
-                                    // Connection status
-                                    Card(
-                                        colors = CardDefaults.cardColors(
-                                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                                        )
-                                    ) {
-                                        Row(
-                                            modifier = Modifier.padding(8.dp),
-                                            verticalAlignment = Alignment.CenterVertically
-                                        ) {
-                                            Icon(
-                                                Icons.Default.CheckCircle,
-                                                contentDescription = null,
-                                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                                modifier = Modifier.size(16.dp)
-                                            )
-                                            Spacer(modifier = Modifier.width(4.dp))
-                                            Text(
-                                                text = "Connected",
-                                                fontSize = 12.sp,
-                                                color = MaterialTheme.colorScheme.onPrimaryContainer
-                                            )
-                                        }
-                                    }
-                                    
-                                    // Recording status
-                                    if (currentState.isRecording) {
-                                        Card(
-                                            colors = CardDefaults.cardColors(
-                                                containerColor = MaterialTheme.colorScheme.errorContainer
-                                            )
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.padding(8.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.FiberManualRecord,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onErrorContainer,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                                Spacer(modifier = Modifier.width(4.dp))
-                                                Text(
-                                                    text = "Recording",
-                                                    fontSize = 12.sp,
-                                                    color = MaterialTheme.colorScheme.onErrorContainer
-                                                )
-                                            }
-                                        }
-                                    }
-                                    
-                                    // Mute status
-                                    if (currentState.isMuted) {
-                                        Card(
-                                            colors = CardDefaults.cardColors(
-                                                containerColor = MaterialTheme.colorScheme.secondaryContainer
-                                            )
-                                        ) {
-                                            Row(
-                                                modifier = Modifier.padding(8.dp),
-                                                verticalAlignment = Alignment.CenterVertically
-                                            ) {
-                                                Icon(
-                                                    Icons.Default.VolumeOff,
-                                                    contentDescription = null,
-                                                    tint = MaterialTheme.colorScheme.onSecondaryContainer,
-                                                    modifier = Modifier.size(16.dp)
-                                                )
-                                                Spacer(modifier = Modifier.width(4.dp))
-                                                Text(
-                                                    text = "Muted",
-                                                    fontSize = 12.sp,
-                                                    color = MaterialTheme.colorScheme.onSecondaryContainer
-                                                )
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                                Spacer(modifier = Modifier.height(16.dp))
-                                
-                                // Play/Pause button
-                                Button(
-                                    onClick = { viewModel.togglePlayPause() }
-                                ) {
-                                    Icon(
-                                        if (currentState.isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                                        contentDescription = null
-                                    )
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text(if (currentState.isPlaying) "Pause" else "Play")
-                                }
-                            }
+                            // Player view will be added here when Player interface is implemented
+                            Text(
+                                text = "Player view placeholder",
+                                textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
+                            )
                         }
-                        
                         is LiveViewUiState.Error -> {
                             Column(
                                 horizontalAlignment = Alignment.CenterHorizontally
@@ -303,47 +145,22 @@ fun LiveViewScreen(
                                 Icon(
                                     Icons.Default.Error,
                                     contentDescription = null,
-                                    modifier = Modifier.size(64.dp),
-                                    tint = MaterialTheme.colorScheme.error
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(48.dp)
                                 )
                                 Spacer(modifier = Modifier.height(16.dp))
                                 Text(
-                                    text = "Connection Error",
-                                    fontSize = 18.sp,
-                                    fontWeight = FontWeight.Medium,
+                                    text = (uiState as LiveViewUiState.Error).message,
+                                    textAlign = TextAlign.Center,
                                     color = MaterialTheme.colorScheme.error
                                 )
-                                Spacer(modifier = Modifier.height(8.dp))
-                                Text(
-                                    text = currentState.message,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    textAlign = TextAlign.Center
-                                )
-                                Spacer(modifier = Modifier.height(16.dp))
-                                Button(
-                                    onClick = { 
-                                        cameraId?.let { viewModel.connectToCamera(it) }
-                                    }
-                                ) {
-                                    Icon(Icons.Default.Refresh, contentDescription = null)
-                                    Spacer(modifier = Modifier.width(8.dp))
-                                    Text("Retry Connection")
-                                }
-                            }
-                        }
-                        
-                        LiveViewUiState.SnapshotTaken -> {
-                            // Show snapshot taken message briefly
-                            LaunchedEffect(Unit) {
-                                kotlinx.coroutines.delay(2000)
-                                // Reset to connected state
                             }
                         }
                     }
                 }
             }
-            
-            // Controls
+
+            // Connection status
             Card(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -353,52 +170,71 @@ fun LiveViewScreen(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(16.dp),
-                    horizontalArrangement = Arrangement.SpaceEvenly
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    IconButton(
-                        onClick = { viewModel.togglePlayPause() },
-                        enabled = uiState is LiveViewUiState.Connected
-                    ) {
-                        Icon(
-                            if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = "Play/Pause"
-                        )
-                    }
-                    
-                    IconButton(
-                        onClick = { viewModel.takeSnapshot() },
-                        enabled = uiState is LiveViewUiState.Connected
-                    ) {
-                        Icon(Icons.Default.Camera, contentDescription = "Snapshot")
-                    }
-                    
-                    IconButton(
-                        onClick = { viewModel.toggleRecording() },
-                        enabled = uiState is LiveViewUiState.Connected
-                    ) {
-                        Icon(
-                            Icons.Default.FiberManualRecord,
-                            contentDescription = "Start/Stop Recording",
-                            tint = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    
-                    IconButton(
-                        onClick = { viewModel.toggleMute() },
-                        enabled = uiState is LiveViewUiState.Connected
-                    ) {
-                        Icon(
-                            if (isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
-                            contentDescription = "Mute/Unmute"
-                        )
-                    }
-                    
-                    IconButton(
-                        onClick = { /* TODO: Fullscreen */ },
-                        enabled = uiState is LiveViewUiState.Connected
-                    ) {
-                        Icon(Icons.Default.Fullscreen, contentDescription = "Fullscreen")
-                    }
+                    Icon(
+                        Icons.Default.Info,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        text = "Status: ${connectedState.connectionStatus}",
+                        fontSize = 14.sp
+                    )
+                }
+            }
+
+            // Control buttons
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                // Play/Pause button
+                FloatingActionButton(
+                    onClick = { viewModel.togglePlayPause() },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        if (isPlaying) Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = if (isPlaying) "Pause" else "Play"
+                    )
+                }
+
+                // Mute button
+                FloatingActionButton(
+                    onClick = { viewModel.toggleMute() },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        if (isMuted) Icons.Default.VolumeOff else Icons.Default.VolumeUp,
+                        contentDescription = if (isMuted) "Unmute" else "Mute"
+                    )
+                }
+
+                // Recording button
+                FloatingActionButton(
+                    onClick = { viewModel.toggleRecording() },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        if (isRecording) Icons.Default.Stop else Icons.Default.FiberManualRecord,
+                        contentDescription = if (isRecording) "Stop Recording" else "Start Recording",
+                        tint = if (isRecording) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+                    )
+                }
+
+                // Snapshot button
+                FloatingActionButton(
+                    onClick = { viewModel.takeSnapshot() },
+                    modifier = Modifier.size(56.dp)
+                ) {
+                    Icon(
+                        Icons.Default.CameraAlt,
+                        contentDescription = "Take Snapshot"
+                    )
                 }
             }
         }

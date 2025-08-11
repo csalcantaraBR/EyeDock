@@ -56,25 +56,25 @@ class NetworkDiscoveryViewModel(
     fun startDiscovery() {
         viewModelScope.launch {
             try {
-                Logger.d("Starting network discovery...")
+                logger.d("Starting network discovery...")
                 _uiState.value = NetworkDiscoveryUiState.Discovering
                 
                 // Check network availability
                 if (!NetworkUtils.isNetworkAvailable(context)) {
-                    Logger.e("No network available")
+                    logger.e("No network available")
                     _uiState.value = NetworkDiscoveryUiState.Error("No network connection available")
                     return@launch
                 }
                 
                 // Get local subnet
                 val subnet = NetworkUtils.getLocalSubnet(context)
-                Logger.d("Local subnet: $subnet")
+                logger.d("Local subnet: $subnet")
                 
                 // Start discovery with timeout
                 withTimeout(45000L) { // 45 seconds timeout for thorough scan
                     // Use network scan instead of WS-Discovery for more reliable results
                     val devices = onvifDiscovery.scanNetworkForDevices()
-                    Logger.i("Discovery completed: ${devices.size} devices found")
+                    logger.i("Discovery completed: ${devices.size} devices found")
                     
                     if (devices.isNotEmpty()) {
                         _uiState.value = NetworkDiscoveryUiState.Success(devices)
@@ -84,10 +84,10 @@ class NetworkDiscoveryViewModel(
                 }
                 
             } catch (e: TimeoutCancellationException) {
-                Logger.e("Discovery timeout")
+                logger.e("Discovery timeout")
                 _uiState.value = NetworkDiscoveryUiState.Error("Discovery timeout - no cameras found")
             } catch (e: Exception) {
-                Logger.e("Discovery failed", e)
+                logger.e("Discovery failed: ${e.message}")
                 _uiState.value = NetworkDiscoveryUiState.Error("Discovery failed: ${e.message}")
             }
         }
@@ -121,7 +121,7 @@ class NetworkDiscoveryViewModel(
                 }
                 
             } catch (e: Exception) {
-                logger.e("Erro ao testar IP da câmera", e)
+                logger.e("Erro ao testar IP da câmera: ${e.message}")
                 _uiState.value = NetworkDiscoveryUiState.Error("Error testing camera IP: ${e.message}")
             }
         }

@@ -4,6 +4,7 @@ plugins {
     id("kotlin-parcelize")
     id("com.google.devtools.ksp")
     id("jacoco")
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -73,6 +74,7 @@ android {
     packaging {
         resources {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "META-INF/DEPENDENCIES"
         }
     }
 }
@@ -127,6 +129,16 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
     implementation("com.google.accompanist:accompanist-permissions:0.32.0")
     implementation("io.coil-kt:coil-compose:2.5.0")
+
+    // Google Drive API
+    implementation("com.google.android.gms:play-services-auth:20.7.0")
+    implementation("com.google.apis:google-api-services-drive:v3-rev20231128-2.0.0")
+    implementation("com.google.api-client:google-api-client-android:2.2.0")
+    implementation("com.google.http-client:google-http-client-gson:1.43.3")
+    
+    // Cloud Storage abstraction
+    implementation("androidx.work:work-runtime-ktx:2.9.0")
+    implementation("androidx.work:work-multiprocess:2.9.0")
 
     // ===== TESTING =====
     testImplementation("junit:junit:4.13.2")

@@ -50,13 +50,13 @@ class AddCameraViewModel : ViewModel() {
      * Pre-fill the form with camera data (e.g., from network discovery)
      */
     fun prefillForm(ip: String, port: Int = Constants.DEFAULT_RTSP_PORT, name: String? = null) {
-        Logger.d("Prefilling form with IP: $ip, port: $port, name: $name")
+        Logger.d("AddCameraViewModel", "Prefilling form with IP: $ip, port: $port, name: $name")
         _formData.value = _formData.value.copy(
             ip = ip,
             port = port.toString(),
             name = name ?: "Camera at $ip"
         )
-        Logger.d("Form data updated: ${_formData.value}")
+        Logger.d("AddCameraViewModel", "Form data updated: ${_formData.value}")
     }
 
     /**

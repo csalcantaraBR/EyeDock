@@ -31,6 +31,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun EyeDockApp() {
     val navController = rememberNavController()
-    EyeDockNavigation(navController)
+    EyeDockNavigation(navController = navController)
 }
 

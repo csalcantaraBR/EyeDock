@@ -17,7 +17,8 @@ fun MainScreen(
     onNavigateToAddCamera: () -> Unit,
     onNavigateToCameras: () -> Unit,
     onNavigateToSettings: () -> Unit,
-    onNavigateToLiveView: (String) -> Unit
+    onNavigateToLiveView: (String) -> Unit,
+    onNavigateToCloudBackup: () -> Unit
 ) {
     Scaffold(
         topBar = {
@@ -151,6 +152,16 @@ fun MainScreen(
                         )
                     }
                 }
+            }
+
+            // Cloud Backup Button
+            Button(
+                onClick = { onNavigateToCloudBackup() },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(Icons.Default.Cloud, contentDescription = null)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Cloud Backup")
             }
             
             Spacer(modifier = Modifier.weight(1f))

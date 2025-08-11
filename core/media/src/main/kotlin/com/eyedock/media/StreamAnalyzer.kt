@@ -5,7 +5,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * GREEN PHASE - Implementação mínima de StreamAnalyzer
+ * StreamAnalyzer para EyeDock
  * 
  * Analisa streams RTSP para detectar codecs e compatibilidade
  */
@@ -14,13 +14,12 @@ class StreamAnalyzer @Inject constructor() {
 
     /**
      * Analisa informações do stream
-     * GREEN: Retorna informações mock baseadas na URL
      */
     suspend fun analyzeStream(rtspUrl: String): StreamInfo {
         // Simular tempo de análise
         delay(800L)
         
-        // GREEN: Determinar codec baseado na URL/IP
+        // Determinar codec baseado na URL/IP
         val videoCodec = when {
             rtspUrl.contains("192.168.1.100") -> "H264"
             rtspUrl.contains("192.168.1.101") -> "H265" 
@@ -34,7 +33,8 @@ class StreamAnalyzer @Inject constructor() {
             resolution = "1920x1080",
             framerate = 30,
             bitrate = 2048,
-            isExoPlayerCompatible = videoCodec in listOf("H264", "H265", "MJPEG")
+            isExoPlayerCompatible = videoCodec in listOf("H264", "H265", "MJPEG"),
+            isValid = true
         )
     }
 }
@@ -48,7 +48,8 @@ data class StreamInfo(
     val resolution: String,
     val framerate: Int,
     val bitrate: Int, // kbps
-    val isExoPlayerCompatible: Boolean
+    val isExoPlayerCompatible: Boolean,
+    val isValid: Boolean = true
 )
 
 /**

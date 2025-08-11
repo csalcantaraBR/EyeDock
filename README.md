@@ -1,181 +1,173 @@
-# EyeDock - IP Camera Management App
+# EyeDock - Sistema de Monitoramento de Câmeras
 
-A modern Android application for managing IP cameras with real-time streaming, network discovery, and comprehensive camera management features.
+EyeDock é um aplicativo Android moderno para monitoramento e gravação de câmeras IP usando protocolos RTSP/ONVIF.
 
-## 🚀 Features
+## 🚀 Funcionalidades
 
-### ✅ Implemented Features
+### ✅ Implementadas
+- **Descoberta de Câmeras**: Descoberta automática de câmeras na rede usando ONVIF
+- **Conexão RTSP**: Suporte a streams RTSP com fallback automático
+- **Interface Moderna**: UI construída com Jetpack Compose
+- **Navegação**: Sistema de navegação entre telas
+- **Teste de Conexão**: Teste de conectividade RTSP
+- **Backup na Nuvem**: Integração com Google Drive (configuração necessária)
+- **Sistema de Eventos**: Gerenciamento de eventos de câmeras
+- **Notificações**: Sistema de notificações push
 
-#### 📱 Core Functionality
-- **Camera Management**: Add, view, and manage multiple IP cameras
-- **Real-time Streaming**: Live video streaming using ExoPlayer with RTSP support
-- **Network Discovery**: Automatic camera discovery on local network with validation
-- **Manual Setup**: Manual camera configuration with IP, port, and credentials
-- **QR Code Scanning**: Camera setup via QR code scanning (framework ready)
+### 🔄 Em Desenvolvimento
+- Gravação de vídeo
+- Reprodução de gravações
+- Configurações avançadas de câmera
+- Detecção de movimento
+- Compartilhamento de gravações
 
-#### 🔍 Network Discovery
-- **Smart Scanning**: Intelligent network scanning with host reachability checks
-- **RTSP Validation**: Rigorous camera validation using RTSP OPTIONS requests
-- **Timeout Management**: Configurable timeouts (45 seconds) with progress indicators
-- **Multiple Paths**: Automatic RTSP path retry mechanism for compatibility
+## 🛠️ Tecnologias
 
-#### 🎥 Live View
-- **ExoPlayer Integration**: High-performance video streaming
-- **Error Handling**: Comprehensive error handling with retry mechanisms
-- **Player Controls**: Play/pause, mute/unmute functionality
-- **Connection Status**: Real-time connection status indicators
+- **Kotlin**: Linguagem principal
+- **Jetpack Compose**: UI moderna
+- **MVVM**: Arquitetura de apresentação
+- **Room**: Banco de dados local
+- **Retrofit**: Comunicação de rede
+- **ExoPlayer**: Reprodução de mídia
+- **Google Drive API**: Backup na nuvem
+- **ONVIF**: Descoberta de câmeras
+- **RTSP**: Streaming de vídeo
 
-#### 🏗️ Architecture
-- **MVVM Pattern**: Clean architecture with ViewModels and StateFlow
-- **Dependency Injection**: Manual DI with AppModule
-- **Repository Pattern**: Data layer abstraction
-- **Room Database**: Local camera storage with SQLite
+## 📱 Telas Principais
 
-### 🔧 Technical Stack
+1. **Tela Principal**: Lista de câmeras conectadas
+2. **Adicionar Câmera**: Configuração manual ou descoberta automática
+3. **Visualização ao Vivo**: Stream em tempo real
+4. **Backup na Nuvem**: Gerenciamento de arquivos no Google Drive
+5. **Configurações**: Configurações do aplicativo
 
-- **Language**: Kotlin
-- **UI Framework**: Jetpack Compose (Material 3)
-- **Architecture**: MVVM + Repository Pattern
-- **Video Player**: ExoPlayer (Media3)
-- **Database**: Room (SQLite)
-- **Networking**: Kotlin Coroutines + Socket connections
-- **Build System**: Gradle (Kotlin DSL)
+## 🏗️ Arquitetura
 
-## 📱 Screenshots
+```
+app/
+├── data/
+│   ├── cloud/          # Integração Google Drive
+│   ├── local/          # Banco de dados Room
+│   ├── network/        # Comunicação de rede
+│   └── repository/     # Repositórios
+├── domain/
+│   ├── interfaces/     # Interfaces de domínio
+│   └── model/          # Modelos de dados
+├── presentation/
+│   ├── screens/        # Telas Compose
+│   ├── viewmodels/     # ViewModels
+│   └── navigation/     # Navegação
+└── utils/              # Utilitários
 
-### Add Camera Screen
-- Three options: QR Scan, Manual Entry, Network Discovery
-- Optimized layout with proper text visibility
-- Material 3 design with consistent spacing
-
-### Network Discovery
-- Real-time network scanning with progress indicators
-- Validated camera detection with RTSP testing
-- Clean UI with device cards and status information
-
-### Live View
-- Full-screen video streaming
-- Player controls and status indicators
-- Error handling with retry options
-
-## 🛠️ Setup & Installation
-
-### Prerequisites
-- Android Studio Arctic Fox or later
-- Android SDK 34+
-- Kotlin 1.9+
-- JDK 17+
-
-### Installation
-1. Clone the repository:
-```bash
-git clone https://github.com/yourusername/EyeDock.git
-cd EyeDock
+core/
+├── events/             # Sistema de eventos
+├── media/              # Streaming RTSP
+├── onvif/              # Descoberta ONVIF
+├── storage/            # Armazenamento local
+└── ui/                 # Componentes UI compartilhados
 ```
 
-2. Open in Android Studio and sync Gradle
+## 🚀 Como Executar
 
-3. Build and run on device or emulator:
+### Pré-requisitos
+- Android Studio Hedgehog ou superior
+- JDK 17
+- Android SDK 34
+- Dispositivo Android ou emulador
+
+### Configuração
+1. Clone o repositório:
+```bash
+git clone https://github.com/seu-usuario/eyedock.git
+cd eyedock
+```
+
+2. Abra o projeto no Android Studio
+
+3. Configure o Google Drive (opcional):
+   - Siga o guia em `GOOGLE_CLOUD_SETUP.md`
+   - Adicione o arquivo `google-services.json` em `app/`
+
+4. Execute o projeto:
 ```bash
 ./gradlew assembleDebug
 ```
 
-### Network Requirements
-- Device must be on the same network as cameras
-- Cameras must support RTSP protocol
-- Network discovery requires local network access
-
-## 🔧 Configuration
-
-### Camera Setup
-1. **Network Discovery**: Automatically finds cameras on network
-2. **Manual Entry**: Enter IP, port, username, and password
-3. **QR Code**: Scan camera QR code (if available)
-
-### RTSP Paths Supported
-- `/onvif1`
-- `/live/ch00_0`
-- `/live/ch0`
-- `/live`
-- `/cam/realmonitor`
-- `/video1`
-- `/video`
-- `/stream1`
-- `/stream`
-
-## 🧪 Testing
-
-### Unit Tests
+### Instalação no Dispositivo
 ```bash
-./gradlew test
+adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### Instrumented Tests
+## 🧪 Testes
+
+### Executar Testes Unitários
+```bash
+# Todos os testes
+./gradlew test
+
+# Módulo específico
+./gradlew :core:events:testDebugUnitTest
+./gradlew :core:media:testDebugUnitTest
+```
+
+### Executar Testes de UI
 ```bash
 ./gradlew connectedAndroidTest
 ```
 
-### Test Coverage
-- ViewModels: Core business logic testing
-- Repository: Data layer testing
-- Network: Connectivity and validation testing
+## 📊 Status dos Testes
 
-## 📊 Project Structure
+- ✅ **Events Module**: Testes passando
+- 🔄 **Media Module**: Em correção
+- ⏳ **ONVIF Module**: Pendente
+- ⏳ **Storage Module**: Pendente
+- ⏳ **UI Module**: Pendente
 
+## 🔧 Configuração do Google Drive
+
+Para usar o backup na nuvem:
+
+1. Crie um projeto no [Google Cloud Console](https://console.cloud.google.com/)
+2. Ative as APIs:
+   - Google Drive API
+   - Google Sign-In API
+3. Configure OAuth 2.0 com:
+   - Package name: `com.eyedock.app.debug`
+   - SHA-1: `52:61:3E:3E:E7:F6:65:01:50:7A:57:3F:C3:55:14:1F:38:9E:7B:45`
+4. Baixe o `google-services.json` e coloque em `app/`
+5. Adicione usuários de teste na tela de consentimento OAuth
+
+Veja o guia completo em `GOOGLE_CLOUD_SETUP.md`.
+
+## 📝 Logs
+
+Para monitorar os logs do aplicativo:
+```bash
+adb logcat -s EyeDock CloudBackupViewModel GoogleDriveStorage CloudBackupRepository
 ```
-app/
-├── src/main/kotlin/com/eyedock/app/
-│   ├── screens/           # Compose UI screens
-│   ├── viewmodels/        # MVVM ViewModels
-│   ├── data/             # Data layer
-│   │   ├── local/        # Room database
-│   │   ├── repository/   # Repository implementations
-│   │   └── player/       # ExoPlayer implementation
-│   ├── domain/           # Domain models and interfaces
-│   ├── network/          # Network discovery
-│   ├── utils/            # Utility classes
-│   └── di/               # Dependency injection
-└── src/test/             # Unit tests
-```
 
-## 🚀 Recent Updates
+## 🤝 Contribuição
 
-### v1.0.0 - Core Implementation
-- ✅ Live video streaming with ExoPlayer
-- ✅ Network discovery with RTSP validation
-- ✅ Manual camera setup
-- ✅ Optimized UI layout and text visibility
-- ✅ Comprehensive error handling
-- ✅ MVVM architecture implementation
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
+3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
+4. Push para a branch (`git push origin feature/AmazingFeature`)
+5. Abra um Pull Request
 
-## 🤝 Contributing
+## 📄 Licença
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Add tests for new functionality
-5. Submit a pull request
+Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
 
-## 📄 License
+## 🐛 Problemas Conhecidos
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+- Google Sign-In requer configuração OAuth adequada
+- Alguns testes ainda estão em correção
+- Funcionalidade de gravação em desenvolvimento
 
-## 🐛 Known Issues
+## 📞 Suporte
 
-- Network discovery may take up to 45 seconds on large networks
-- Some camera models may require specific RTSP paths
-- Emulator testing has network limitations (use physical device)
-
-## 🔮 Roadmap
-
-- [ ] PTZ camera controls
-- [ ] Video recording functionality
-- [ ] Snapshot capture
-- [ ] Fullscreen mode
-- [ ] Camera grouping
-- [ ] Push notifications
-- [ ] Cloud storage integration
+Para suporte, abra uma issue no GitHub ou entre em contato através do email: suporte@eyedock.com
 
 ---
 
-**EyeDock** - Making IP camera management simple and efficient.
+**EyeDock** - Monitoramento inteligente de câmeras IP

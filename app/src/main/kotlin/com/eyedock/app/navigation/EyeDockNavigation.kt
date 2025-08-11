@@ -12,22 +12,31 @@ import com.eyedock.app.screens.SettingsScreen
 import com.eyedock.app.screens.QrScanScreen
 import com.eyedock.app.screens.ManualSetupScreen
 import com.eyedock.app.screens.NetworkDiscoveryScreen
+import com.eyedock.app.screens.CloudBackupScreen
 import com.eyedock.app.utils.Logger
 
+object EyeDockNavigation {
+    const val TAG = "EyeDockNavigation"
+}
+
 @Composable
-fun EyeDockNavigation(navController: NavHostController) {
+fun EyeDockNavigation(
+    navController: NavHostController
+) {
     NavHost(
         navController = navController,
         startDestination = "main"
     ) {
-        // Tela principal
         composable("main") {
             MainScreen(
                 onNavigateToAddCamera = { navController.navigate("add_camera") },
                 onNavigateToCameras = { navController.navigate("cameras") },
                 onNavigateToSettings = { navController.navigate("settings") },
-                onNavigateToLiveView = { cameraId -> 
+                onNavigateToLiveView = { cameraId ->
                     navController.navigate("live_view/$cameraId")
+                },
+                onNavigateToCloudBackup = {
+                    navController.navigate("cloud_backup")
                 }
             )
         }
@@ -77,7 +86,7 @@ fun EyeDockNavigation(navController: NavHostController) {
             NetworkDiscoveryScreen(
                 onNavigateToAddCamera = { cameraIp ->
                     // Navegar para setup manual com IP pré-preenchido
-                    Logger.d("Camera selected from network discovery: $cameraIp")
+                    Logger.d(EyeDockNavigation.TAG, "Camera selected from network discovery: $cameraIp")
                     navController.navigate("manual_setup/$cameraIp")
                 },
                 onNavigateBack = { navController.popBackStack() }
@@ -108,16 +117,22 @@ fun EyeDockNavigation(navController: NavHostController) {
         composable("cameras") {
             CamerasScreen(
                 onNavigateBack = { navController.popBackStack() },
+                onNavigateToAddCamera = { navController.navigate("add_camera") },
                 onNavigateToLiveView = { cameraId ->
                     navController.navigate("live_view/$cameraId")
-                },
-                onNavigateToAddCamera = { navController.navigate("add_camera") }
+                }
             )
         }
         
         // Configurações
         composable("settings") {
             SettingsScreen(
+                onNavigateBack = { navController.popBackStack() }
+            )
+        }
+
+        composable("cloud_backup") {
+            CloudBackupScreen(
                 onNavigateBack = { navController.popBackStack() }
             )
         }

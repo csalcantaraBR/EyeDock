@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Google Services Configuration for Development -->
+    <!-- In production, this should be replaced with google-services.json -->
+    
+    <!-- Default web client ID for Google Sign-In -->
+    <string name="default_web_client_id" translatable="false">
+        123456789-abcdefghijklmnopqrstuvwxyz.apps.googleusercontent.com
+    </string>
+    
+    <!-- Google App ID -->
+    <string name="google_app_id" translatable="false">
+        1:123456789:android:abcdef1234567890
+    </string>
+    
+    <!-- Project ID -->
+    <string name="project_id" translatable="false">
+        eyedock-app
+    </string>
+    
+    <!-- Project Number -->
+    <string name="project_number" translatable="false">
+        123456789
+    </string>
+    
+    <!-- Firebase Database URL (if using Firebase) -->
+    <string name="firebase_database_url" translatable="false">
+        https://eyedock-app-default-rtdb.firebaseio.com
+    </string>
+    
+    <!-- Google API Key -->
+    <string name="google_api_key" translatable="false">
+        AIzaSyB_YourApiKeyHere_ForDevelopment
+    </string>
+    
+    <!-- Google Storage Bucket -->
+    <string name="google_storage_bucket" translatable="false">
+        eyedock-app.appspot.com
+    </string>
+    
+    <!-- Google Cloud Messaging Sender ID -->
+    <string name="gcm_defaultSenderId" translatable="false">
+        123456789
+    </string>
+    
+    <!-- Google Cloud Project ID -->
+    <string name="google_cloud_project_id" translatable="false">
+        eyedock-app
+    </string>
+</resources>

@@ -23,87 +23,100 @@ import java.util.concurrent.TimeUnit
 class OnvifDiscovery(private val context: Context) {
     
     companion object {
+        private const val TAG = "OnvifDiscovery"
         private const val ONVIF_MULTICAST_ADDRESS = "239.255.255.250"
         private const val ONVIF_MULTICAST_PORT = 3702
         private const val DISCOVERY_TIMEOUT_MS = 5000L
         private const val SOCKET_TIMEOUT_MS = 1000
         
-        private val logger = Logger.withTag("OnvifDiscovery")
+        private val logger = Logger
     }
     
     /**
      * Descobre dispositivos ONVIF na rede usando WS-Discovery
      */
-    suspend fun discoverDevices(): List<OnvifDevice> = withContext(Dispatchers.IO) {
-        try {
-            val subnet = NetworkUtils.getLocalSubnet(context)
-            logger.d("Iniciando descoberta ONVIF na subnet: $subnet")
-            
-            val discoveredDevices = mutableListOf<OnvifDevice>()
-            
-            withTimeout(DISCOVERY_TIMEOUT_MS) {
-                // Enviar probe WS-Discovery
-                val probeMessage = createWsDiscoveryProbe()
-                val multicastSocket = MulticastSocket(ONVIF_MULTICAST_PORT)
+    suspend fun discoverDevices(): List<OnvifDevice> {
+        return withContext(Dispatchers.IO) {
+            try {
+                logger.d(TAG, "Starting ONVIF device discovery")
+                val devices = mutableListOf<OnvifDevice>()
                 
-                try {
-                    multicastSocket.soTimeout = SOCKET_TIMEOUT_MS
-                    multicastSocket.joinGroup(InetAddress.getByName(ONVIF_MULTICAST_ADDRESS))
-                    
-                    // Enviar probe
-                    val probePacket = DatagramPacket(
-                        probeMessage.toByteArray(),
-                        probeMessage.length,
-                        InetAddress.getByName(ONVIF_MULTICAST_ADDRESS),
-                        ONVIF_MULTICAST_PORT
-                    )
-                    multicastSocket.send(probePacket)
-                    logger.d("Probe WS-Discovery enviado")
-                    
-                    // Escutar respostas
-                    val buffer = ByteArray(4096)
-                    var attempts = 0
-                    val maxAttempts = 10
-                    
-                    while (attempts < maxAttempts) {
-                        try {
-                            val responsePacket = DatagramPacket(buffer, buffer.size)
-                            multicastSocket.receive(responsePacket)
-                            
-                            val response = String(responsePacket.data, 0, responsePacket.length)
-                            val sourceIp = responsePacket.address.hostAddress ?: "unknown"
-                            logger.d("Resposta recebida de: $sourceIp")
-                            
-                            val device = parseWsDiscoveryResponse(response, sourceIp)
-                            if (device != null) {
-                                // Validar se o dispositivo é realmente uma câmera
-                                if (NetworkUtils.validateCameraDevice(sourceIp)) {
-                                    if (!discoveredDevices.any { it.ip == device.ip }) {
-                                        discoveredDevices.add(device)
-                                        logger.i("Dispositivo ONVIF válido encontrado: ${device.name} (${device.ip})")
-                                    }
-                                } else {
-                                    logger.d("Dispositivo $sourceIp não é uma câmera válida, ignorando")
-                                }
-                            }
-                            
-                        } catch (e: SocketTimeoutException) {
-                            attempts++
-                            logger.d("Timeout na tentativa $attempts/$maxAttempts")
+                // Try WS-Discovery first
+                val wsDevices = performWsDiscovery()
+                devices.addAll(wsDevices)
+                
+                // Then scan network for additional devices
+                val networkDevices = scanNetworkForDevices()
+                devices.addAll(networkDevices)
+                
+                logger.d(TAG, "Discovery completed. Found ${devices.size} devices")
+                devices
+            } catch (e: Exception) {
+                logger.e(TAG, "Discovery failed: ${e.message}")
+                emptyList()
+            }
+        }
+    }
+    
+    /**
+     * Perform WS-Discovery using multicast
+     */
+    private suspend fun performWsDiscovery(): List<OnvifDevice> {
+        return withContext(Dispatchers.IO) {
+            val devices = mutableListOf<OnvifDevice>()
+            
+            try {
+                val multicastSocket = MulticastSocket(ONVIF_MULTICAST_PORT)
+                multicastSocket.soTimeout = SOCKET_TIMEOUT_MS
+                multicastSocket.joinGroup(InetAddress.getByName(ONVIF_MULTICAST_ADDRESS))
+                
+                val probeMessage = createWsDiscoveryProbe()
+                val probeData = probeMessage.toByteArray()
+                val probePacket = DatagramPacket(
+                    probeData, 
+                    probeData.size,
+                    InetAddress.getByName(ONVIF_MULTICAST_ADDRESS),
+                    ONVIF_MULTICAST_PORT
+                )
+                
+                multicastSocket.send(probePacket)
+                logger.d(TAG, "WS-Discovery probe sent")
+                
+                // Listen for responses
+                val buffer = ByteArray(4096)
+                val startTime = System.currentTimeMillis()
+                
+                while (System.currentTimeMillis() - startTime < DISCOVERY_TIMEOUT_MS) {
+                    try {
+                        val responsePacket = DatagramPacket(buffer, buffer.size)
+                        multicastSocket.receive(responsePacket)
+                        
+                        val response = String(responsePacket.data, 0, responsePacket.length)
+                        val sourceIp = responsePacket.address.hostAddress
+                        
+                        logger.d(TAG, "Received response from $sourceIp")
+                        
+                        val device = parseWsDiscoveryResponse(response, sourceIp)
+                        if (device != null) {
+                            devices.add(device)
+                            logger.i(TAG, "Found ONVIF device: ${device.name} at ${device.ip}")
                         }
+                        
+                    } catch (e: SocketTimeoutException) {
+                        // Continue listening
+                        continue
+                    } catch (e: Exception) {
+                        logger.w(TAG, "Error processing WS-Discovery response: ${e.message}")
                     }
-                    
-                } finally {
-                    multicastSocket.close()
                 }
+                
+                multicastSocket.close()
+                
+            } catch (e: Exception) {
+                logger.e(TAG, "WS-Discovery failed: ${e.message}")
             }
             
-            logger.i("Descoberta WS-Discovery concluída. ${discoveredDevices.size} dispositivos válidos encontrados")
-            discoveredDevices
-            
-        } catch (e: Exception) {
-            logger.e("Erro durante descoberta ONVIF", e)
-            emptyList()
+            devices
         }
     }
     
@@ -115,7 +128,7 @@ class OnvifDiscovery(private val context: Context) {
             val devices = mutableListOf<OnvifDevice>()
             val subnet = NetworkUtils.getLocalSubnet(context)
             
-            Logger.d("Scanning subnet: $subnet")
+            Logger.d(TAG, "Scanning subnet: $subnet")
             
             val baseIp = subnet.substring(0, subnet.lastIndexOf("."))
             var testedCount = 0
@@ -131,12 +144,12 @@ class OnvifDiscovery(private val context: Context) {
                     // First check if host is reachable with shorter timeout
                     if (NetworkUtils.isHostReachable(ip, 500)) { // 500ms timeout for ping
                         reachableCount++
-                        Logger.d("Host reachable: $ip")
+                        Logger.d(TAG, "Host reachable: $ip")
                         
                         // Test if it's a valid camera with more rigorous validation
                         if (NetworkUtils.testCameraConnectivity(ip)) {
                             cameraCount++
-                            Logger.i("Valid camera found: $ip")
+                            Logger.i(TAG, "Valid camera found: $ip")
                             
                             val device = OnvifDevice(
                                 name = "Camera at $ip",
@@ -152,7 +165,7 @@ class OnvifDiscovery(private val context: Context) {
                             )
                             devices.add(device)
                         } else {
-                            Logger.d("IP $ip is reachable but not a valid camera")
+                            Logger.d(TAG, "IP $ip is reachable but not a valid camera")
                         }
                     }
                     
@@ -160,11 +173,11 @@ class OnvifDiscovery(private val context: Context) {
                     delay(25) // Reduced delay for faster scanning
                     
                 } catch (e: Exception) {
-                    Logger.d("Error scanning IP $ip: ${e.message}")
+                    Logger.d(TAG, "Error scanning IP $ip: ${e.message}")
                 }
             }
             
-            Logger.i("Network scan completed: $testedCount tested, $reachableCount reachable, $cameraCount cameras found")
+            Logger.i(TAG, "Network scan completed: $testedCount tested, $reachableCount reachable, $cameraCount cameras found")
             devices
         }
     }
@@ -217,7 +230,7 @@ class OnvifDiscovery(private val context: Context) {
             )
             
         } catch (e: Exception) {
-            Logger.e("Erro ao fazer parse da resposta WS-Discovery", e)
+            Logger.e(TAG, "Erro ao fazer parse da resposta WS-Discovery: ${e.message}")
             null
         }
     }

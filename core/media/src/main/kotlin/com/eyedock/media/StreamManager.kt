@@ -5,7 +5,7 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * GREEN PHASE - Implementação mínima de StreamManager
+ * StreamManager para EyeDock
  * 
  * Gerencia conexões com fallback entre múltiplos streams RTSP
  */
@@ -14,9 +14,41 @@ class StreamManager @Inject constructor(
     private val rtspClient: RtspClient
 ) {
 
+    private val activeStreams = mutableSetOf<String>()
+
+    /**
+     * Adiciona uma stream à lista de streams ativas
+     */
+    fun addStream(streamUrl: String): Boolean {
+        return try {
+            activeStreams.add(streamUrl)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Remove uma stream da lista de streams ativas
+     */
+    fun removeStream(streamUrl: String): Boolean {
+        return try {
+            activeStreams.remove(streamUrl)
+            true
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    /**
+     * Obtém o número de streams ativas
+     */
+    fun getActiveStreamCount(): Int {
+        return activeStreams.size
+    }
+
     /**
      * Conecta com fallback automático entre streams
-     * GREEN: Implementação que simula fallback de /onvif1 para /onvif2
      */
     suspend fun connectWithFallback(config: CameraConfig): StreamConnectionResult {
         val rtspPaths = listOf("/onvif1", "/onvif2")

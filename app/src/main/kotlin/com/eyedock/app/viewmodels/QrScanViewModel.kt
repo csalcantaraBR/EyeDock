@@ -80,7 +80,7 @@ class QrScanViewModel : ViewModel() {
                 _uiState.value = QrScanUiState.Success(cameraConnection)
 
             } catch (e: Exception) {
-                logger.e("Error processing QR code", e)
+                logger.e("Error processing QR code: ${e.message}")
                 _uiState.value = QrScanUiState.Error("${Constants.ErrorMessages.QR_PROCESSING_ERROR}: ${e.message}")
             }
         }

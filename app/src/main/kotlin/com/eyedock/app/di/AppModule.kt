@@ -8,6 +8,7 @@ import com.eyedock.app.domain.interfaces.QrParser
 import com.eyedock.app.data.qr.QrParserImpl
 import com.eyedock.app.domain.interfaces.Player
 import com.eyedock.app.data.player.ExoPlayerImpl
+import com.eyedock.app.data.repository.CloudBackupRepository
 
 /**
  * Manual dependency injection module for the EyeDock application.
@@ -60,6 +61,10 @@ object AppModule {
      */
     fun getPlayer(): Player {
         return player ?: throw IllegalStateException("AppModule not initialized. Call initialize() first.")
+    }
+
+    fun provideCloudBackupRepository(context: Context): CloudBackupRepository {
+        return CloudBackupRepository(context)
     }
     
     /**

@@ -1,6 +1,5 @@
 # Built application files
 *.apk
-*.aar
 *.ap_
 *.aab
 
@@ -52,10 +51,11 @@ captures/
 
 # Keystore files
 # Uncomment the following lines if you do not want to check your keystore files in.
-#*.jks
-#*.keystore
+*.jks
+*.keystore
 
 # External native build folder generated in Android Studio 2.2 and later
+.externalNativeBuild
 .cxx/
 
 # Google Services (e.g. APIs or Firebase)
@@ -103,28 +103,45 @@ Thumbs.db
 .vscode/
 *.swp
 *.swo
+*~
 
-# Test files
-test-scripts/
-*.ps1
+# Test reports
+test-results/
+reports/
 
-# Documentation files (keep only essential ones)
-# COMPLETE_TESTING_GUIDE.md
-# COMPLIANCE_AUDIT.md
-# DEPLOYMENT_CHECKLIST.md
-# IMPLEMENTATION_PLAN.md
-# LOCAL_TESTING_SETUP.md
-# PLAY_STORE_LISTING.md
-# PRIVACY_POLICY.md
-# PROJECT_COMPLETE_SUMMARY.md
-# TDD-FINAL-SUMMARY.md
-# TDD-GUIDE.md
-# TDD-PROGRESS.md
-# TESTS.md
-# simulate-tdd.md
+# Coverage reports
+coverage/
+*.coverage
+*.lcov
 
-# Template folder
-Template/
+# Backup files
+*.bak
+*.backup
 
-# Gradle wrapper
-gradle-8.5-bin.zip
+# Logs
+logs/
+*.log.*
+
+# Environment files
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+
+# Crashlytics
+crashlytics.properties
+crashlytics-build.properties
+
+# Fabric
+fabric.properties
+
+# App signing
+app/signing.properties
+
+# Local configuration
+local.properties

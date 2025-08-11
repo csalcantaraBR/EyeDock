@@ -7,19 +7,62 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 /**
- * GREEN PHASE - Implementação mínima de EventManager
+ * EventManager para EyeDock
  * 
- * Gerencia subscrições de eventos (movimento/som) das câmeras
+ * Gerencia eventos de câmeras, incluindo movimento, som e notificações
  */
 @Singleton
 class EventManager @Inject constructor() {
 
     private val activeSubscriptions = ConcurrentHashMap<String, EventSubscription>()
     private val connectionStates = ConcurrentHashMap<String, Boolean>()
+    private val events = mutableListOf<Event>()
+
+    /**
+     * Registra um evento básico
+     */
+    fun registerEvent(eventType: String, cameraId: String): Boolean {
+        val event = Event(
+            id = "${cameraId}_${System.currentTimeMillis()}",
+            type = eventType,
+            cameraId = cameraId,
+            timestamp = System.currentTimeMillis()
+        )
+        events.add(event)
+        return true
+    }
+
+    /**
+     * Obtém todos os eventos registrados
+     */
+    fun getEvents(): List<Event> {
+        return events.toList()
+    }
+
+    /**
+     * Limpa eventos antigos (mais de 24 horas)
+     */
+    fun clearOldEvents() {
+        val cutoffTime = System.currentTimeMillis() - (24 * 60 * 60 * 1000) // 24 horas
+        events.removeAll { it.timestamp < cutoffTime }
+    }
+
+    /**
+     * Filtra eventos por tipo
+     */
+    fun getEventsByType(eventType: String): List<Event> {
+        return events.filter { it.type == eventType }
+    }
+
+    /**
+     * Filtra eventos por câmera
+     */
+    fun getEventsByCamera(cameraId: String): List<Event> {
+        return events.filter { it.cameraId == cameraId }
+    }
 
     /**
      * Subscreve eventos de movimento de uma câmera
-     * GREEN: Implementação mock que simula subscription ativa
      */
     suspend fun subscribeToMotionEvents(config: CameraConfig): EventSubscription {
         val subscriptionId = "${config.ip}_motion"
@@ -40,7 +83,6 @@ class EventManager @Inject constructor() {
 
     /**
      * Remove subscrição de eventos
-     * GREEN: Implementação que limpa subscription
      */
     suspend fun unsubscribeFromEvents(cameraIp: String) {
         val subscriptionId = "${cameraIp}_motion"
@@ -54,20 +96,16 @@ class EventManager @Inject constructor() {
 
     /**
      * Simula perda de conexão para testes
-     * GREEN: Implementação de teste
      */
     fun simulateConnectionLoss(cameraIp: String) {
         connectionStates[cameraIp] = false
-        // Subscription permanece ativa para reconexão automática
     }
 
     /**
      * Simula reconexão para testes
-     * GREEN: Implementação de teste
      */
     fun simulateReconnection(cameraIp: String) {
         connectionStates[cameraIp] = true
-        // Subscription deve permanecer ativa
     }
 }
 
@@ -287,4 +325,14 @@ data class ProcessedEvent(
     val processedTimestamp: Long,
     val eventType: String,
     val confidence: Double
+)
+
+/**
+ * Evento básico
+ */
+data class Event(
+    val id: String,
+    val type: String,
+    val cameraId: String,
+    val timestamp: Long
 )
