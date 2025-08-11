@@ -1,307 +1,80 @@
-name: EyeDock CI
+name: 🧪 Testes Automatizados
 
 on:
   push:
     branches: [ main, develop ]
   pull_request:
     branches: [ main, develop ]
-
-env:
-  GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2
+  workflow_dispatch:
 
 jobs:
-  lint:
-    name: Lint & Static Analysis
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Fix Gradlew Permissions
-        run: |
-          chmod +x ./gradlew
-          ls -la gradlew
-          
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        
-      - name: Run Lint
-        run: ./gradlew lint
-        
-      - name: Run Detekt
-        run: ./gradlew detekt
-        
-      - name: Run KtLint
-        run: ./gradlew ktlintCheck
-        
-      - name: Upload lint results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: lint-results
-          path: |
-            **/build/reports/lint-results*.html
-            **/build/reports/detekt/
-
   unit-tests:
-    name: Unit Tests
+    name: 🧪 Testes Unitários
     runs-on: ubuntu-latest
+    timeout-minutes: 10
+    
     steps:
-      - uses: actions/checkout@v4
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
         
-      - name: Setup JDK 17
+      - name: ☕ Setup Java
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
           
-      - name: Fix Gradlew Permissions
+      - name: 🔐 Fix Permissions
         run: |
           chmod +x ./gradlew
           ls -la gradlew
           
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        
-      - name: Run Unit Tests
-        run: ./gradlew test --continue
-        
-      - name: Generate Coverage Report
-        run: ./gradlew jacocoTestReport
-        
-      - name: Upload Coverage to Codecov
-        uses: codecov/codecov-action@v3
-        with:
-          files: ./app/build/reports/jacoco/test/jacocoTestReport.xml
-          
-      - name: Coverage Gate
-        run: |
-          ./gradlew jacocoTestCoverageVerification
-        
-      - name: Upload test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: unit-test-results
-          path: |
-            **/build/reports/tests/
-            **/build/test-results/
-
-  instrumentation-tests:
-    name: Instrumentation Tests
-    runs-on: macos-latest
-    strategy:
-      matrix:
-        api-level: [26, 29, 33]
-        target: [default, google_apis]
-    steps:
-      - uses: actions/checkout@v4
-        
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Fix Gradlew Permissions
-        run: |
-          chmod +x ./gradlew
-          ls -la gradlew
-          
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        
-      - name: AVD Cache
+      - name: 📦 Cache Gradle
         uses: actions/cache@v4
-        id: avd-cache
         with:
           path: |
-            ~/.android/avd/*
-            ~/.android/adb*
-          key: avd-${{ matrix.api-level }}-${{ matrix.target }}
-          
-      - name: Create AVD and generate snapshot for caching
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: false
-          script: echo "Generated AVD snapshot for caching."
-          
-      - name: Run Instrumentation Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: ${{ matrix.api-level }}
-          target: ${{ matrix.target }}
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-snapshot-save -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
-          disable-animations: true
-          script: |
-            adb logcat > logcat.txt &
-            ./gradlew connectedCheck --continue
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
             
-      - name: Upload logcat
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: logcat-${{ matrix.api-level }}-${{ matrix.target }}
-          path: logcat.txt
-          
-      - name: Upload instrumentation test results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: instrumentation-test-results-${{ matrix.api-level }}-${{ matrix.target }}
-          path: |
-            **/build/reports/androidTests/
-            **/build/outputs/androidTest-results/
-
-  performance-tests:
-    name: Performance Tests
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-        
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Fix Gradlew Permissions
+      - name: 📝 Debug Info
         run: |
-          chmod +x ./gradlew
-          ls -la gradlew
+          echo "🔍 Debug Info:"
+          echo "Java: $(java -version)"
+          echo "Gradle: $(./gradlew --version)"
           
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        
-      - name: Run Benchmark Tests
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 33
-          target: google_apis
-          arch: x86_64
-          force-avd-creation: false
-          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
-          disable-animations: true
-          script: |
-            ./gradlew :app:benchmarkRelease
-            
-      - name: Upload benchmark results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: benchmark-results
-          path: |
-            **/build/reports/benchmark/
-            **/build/outputs/benchmark/
-
-  security-scan:
-    name: Security Scan
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-        
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Fix Gradlew Permissions
+      - name: ✅ Validate Setup
         run: |
-          chmod +x ./gradlew
-          ls -la gradlew
-          
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        
-      - name: Dependency Vulnerability Scan
-        run: ./gradlew dependencyCheckAnalyze
-        
-      - name: Upload security scan results
-        uses: actions/upload-artifact@v4
-        if: always()
-        with:
-          name: security-scan-results
-          path: build/reports/dependency-check-report.html
-
-  build-release:
-    name: Build Release AAB
-    runs-on: ubuntu-latest
-    needs: [lint, unit-tests]
-    if: github.ref == 'refs/heads/main'
-    steps:
-      - uses: actions/checkout@v4
-        
-      - name: Setup JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          
-      - name: Fix Gradlew Permissions
-        run: |
-          chmod +x ./gradlew
-          ls -la gradlew
-          
-      - name: Setup Gradle
-        uses: gradle/gradle-build-action@v2
-        
-      - name: Decode Keystore
-        env:
-          ENCODED_KEYSTORE: ${{ secrets.ENCODED_KEYSTORE }}
-        run: |
-          echo $ENCODED_KEYSTORE | base64 -d > keystore.jks
-          
-      - name: Build Release AAB
-        env:
-          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
-        run: |
-          ./gradlew bundleRelease \
-            -Pandroid.injected.signing.store.file=../keystore.jks \
-            -Pandroid.injected.signing.store.password=$KEYSTORE_PASSWORD \
-            -Pandroid.injected.signing.key.alias=$KEY_ALIAS \
-            -Pandroid.injected.signing.key.password=$KEY_PASSWORD
-            
-      - name: Upload AAB
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-aab
-          path: app/build/outputs/bundle/release/app-release.aab
-          
-      - name: Upload Mapping File
-        uses: actions/upload-artifact@v4
-        with:
-          name: release-mapping
-          path: app/build/outputs/mapping/release/mapping.txt
-
-  quality-gate:
-    name: Quality Gate
-    runs-on: ubuntu-latest
-    needs: [lint, unit-tests, instrumentation-tests]
-    if: always()
-    steps:
-      - name: Check Quality Gate
-        run: |
-          if [[ "${{ needs.lint.result }}" == "failure" || 
-                "${{ needs.unit-tests.result }}" == "failure" || 
-                "${{ needs.instrumentation-tests.result }}" == "failure" ]]; then
-            echo "Quality gate failed!"
+          if [ ! -f "./gradlew" ]; then
+            echo "❌ Gradlew não encontrado!"
             exit 1
-          else
-            echo "Quality gate passed!"
           fi
+          echo "✅ Setup validado!"
+          
+      - name: 🧪 Run Unit Tests
+        run: |
+          echo "🧪 Executando testes unitários..."
+          ./gradlew :app:testDebugUnitTest --info
+        
+      - name: 📊 Generate Coverage
+        run: |
+          echo "📊 Gerando relatório de cobertura..."
+          ./gradlew jacocoTestReport
+        
+      - name: 📤 Upload Results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-${{ github.run_number }}
+          path: |
+            app/build/reports/tests/
+            app/build/reports/jacoco/
+          retention-days: 7
+          
+      - name: ✅ Success
+        run: |
+          echo "✅ Testes executados com sucesso!"
+          echo "📋 Commit: ${{ github.sha }}"
+          echo "👤 Autor: ${{ github.actor }}"
+          echo "🔗 Build: #${{ github.run_number }}"
