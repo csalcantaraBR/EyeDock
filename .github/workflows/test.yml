@@ -11,7 +11,7 @@ jobs:
   unit-tests:
     name: 🧪 Testes Unitários
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     
     steps:
       - name: 📥 Checkout
@@ -46,6 +46,9 @@ jobs:
           echo "🔍 Debug Info:"
           echo "Java: $(java -version)"
           echo "Gradle: $(./gradlew --version)"
+          echo "OS: $(uname -a)"
+          echo "Memory: $(free -h)"
+          echo "Disk: $(df -h)"
           
       - name: ✅ Validate Setup
         run: |
@@ -55,17 +58,70 @@ jobs:
           fi
           echo "✅ Setup validado!"
           
+      - name: 🔧 Create Mock Google Services
+        run: |
+          echo "🔧 Criando google-services.json mock para testes..."
+          mkdir -p app/src/debug
+          cat > app/src/debug/google-services.json << 'EOF'
+          {
+            "project_info": {
+              "project_number": "123456789",
+              "project_id": "eyedock-test",
+              "storage_bucket": "eyedock-test.appspot.com"
+            },
+            "client": [
+              {
+                "client_info": {
+                  "mobilesdk_app_id": "1:123456789:android:test123",
+                  "android_client_info": {
+                    "package_name": "com.eyedock.app"
+                  }
+                },
+                "oauth_client": [
+                  {
+                    "client_id": "test-client-id.apps.googleusercontent.com",
+                    "client_type": 3
+                  }
+                ],
+                "api_key": [
+                  {
+                    "current_key": "test-api-key"
+                  }
+                ],
+                "services": {
+                  "appinvite_service": {
+                    "other_platform_oauth_client": [
+                      {
+                        "client_id": "test-web-client-id.apps.googleusercontent.com",
+                        "client_type": 3
+                      }
+                    ]
+                  }
+                }
+              }
+            ]
+          }
+          EOF
+          echo "✅ google-services.json mock criado!"
+          
+      - name: 🔍 Check Project Structure
+        run: |
+          echo "📁 Project Structure:"
+          find . -name "*.gradle*" -o -name "build.gradle*" | head -20
+          echo "📁 Source files:"
+          find . -name "*.kt" -o -name "*.java" | head -10
+          
       - name: 🧪 Run Unit Tests
         timeout-minutes: 10
         run: |
           echo "🧪 Executando testes unitários..."
-          ./gradlew :app:testDebugUnitTest :core:events:testDebugUnitTest --info
+          ./gradlew :app:testDebugUnitTest :core:events:testDebugUnitTest --info --stacktrace
           
       - name: 📊 Generate Coverage
         timeout-minutes: 5
         run: |
           echo "📊 Gerando relatório de cobertura..."
-          ./gradlew jacocoTestReport
+          ./gradlew jacocoTestReport --info
           
       - name: 📤 Upload Results
         uses: actions/upload-artifact@v4
