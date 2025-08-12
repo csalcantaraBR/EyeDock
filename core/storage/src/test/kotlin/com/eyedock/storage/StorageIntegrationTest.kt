@@ -26,6 +26,8 @@ import java.nio.file.Paths
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.concurrent.TimeUnit
+import android.content.Context
+import org.mockito.Mockito.mock
 
 /**
  * Testes de integração para o módulo de storage
@@ -35,6 +37,8 @@ import java.util.concurrent.TimeUnit
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StorageIntegrationTest {
 
+    private val mockContext = mock<Context>()
+    
     private lateinit var storageManager: StorageManager
     private lateinit var fileWriter: SafFileWriter
     private lateinit var retentionManager: RetentionManager
@@ -44,17 +48,17 @@ class StorageIntegrationTest {
 
     @BeforeEach
     fun setUp() {
-        storageManager = StorageManager()
-        fileWriter = SafFileWriter()
-        retentionManager = RetentionManager()
-        shareManager = ShareManager()
-        fileIndexer = FileIndexer()
-        storageDetector = StorageDetector()
+        storageManager = StorageManager(mockContext)
+        fileWriter = SafFileWriter(mockContext)
+        retentionManager = RetentionManager(mockContext)
+        shareManager = ShareManager(mockContext)
+        fileIndexer = FileIndexer(mockContext)
+        storageDetector = StorageDetector(mockContext)
     }
 
     @Nested
     @DisplayName("Storage Manager Integration")
-    class StorageManagerIntegrationTest {
+    inner class StorageManagerIntegrationTest {
 
         @Test
         @Tag(INTEGRATION_TEST)
@@ -135,7 +139,7 @@ class StorageIntegrationTest {
 
     @Nested
     @DisplayName("File Operations Integration")
-    class FileOperationsIntegrationTest {
+    inner class FileOperationsIntegrationTest {
 
         @Test
         @Tag(INTEGRATION_TEST)
@@ -243,7 +247,7 @@ class StorageIntegrationTest {
 
     @Nested
     @DisplayName("Retention Policy Integration")
-    class RetentionPolicyIntegrationTest {
+    inner class RetentionPolicyIntegrationTest {
 
         @Test
         @Tag(INTEGRATION_TEST)
@@ -317,7 +321,7 @@ class StorageIntegrationTest {
 
     @Nested
     @DisplayName("Sharing Integration")
-    class SharingIntegrationTest {
+    inner class SharingIntegrationTest {
 
         @Test
         @Tag(INTEGRATION_TEST)
@@ -378,7 +382,7 @@ class StorageIntegrationTest {
 
     @Nested
     @DisplayName("Error Handling Integration")
-    class ErrorHandlingIntegrationTest {
+    inner class ErrorHandlingIntegrationTest {
 
         @Test
         @Tag(INTEGRATION_TEST)
@@ -439,7 +443,7 @@ class StorageIntegrationTest {
 
     @Nested
     @DisplayName("Performance Integration")
-    class PerformanceIntegrationTest {
+    inner class PerformanceIntegrationTest {
 
         @Test
         @Tag(INTEGRATION_TEST)
@@ -480,6 +484,7 @@ class StorageIntegrationTest {
                         1 -> fileIndexer.indexFolder(testFolderUri)
                         2 -> retentionManager.performCleanup(testFolderUri)
                         3 -> shareManager.shareFile(testFolderUri, "file_$index.mp4")
+                        else -> fileWriter.writeFile(testFolderUri, "file_$index.mp4", "data".toByteArray())
                     }
                 }
             }
@@ -497,170 +502,3 @@ class StorageIntegrationTest {
         return "${cameraName}_${timestamp}.mp4"
     }
 }
-
-// Classes de implementação para os testes
-class StorageManager {
-    private var selectedFolderUri: String? = null
-
-    suspend fun selectFolder(uri: String): Result<String> {
-        return if (uri.contains("revoked")) {
-            Result.failure(UriRevokedException("URI foi revogada"))
-        } else {
-            selectedFolderUri = uri
-            Result.success(uri)
-        }
-    }
-
-    fun getSelectedFolderUri(): String? = selectedFolderUri
-
-    suspend fun createFolderStructure(baseUri: String, folderName: String): Result<String> {
-        delay(100)
-        return Result.success("$baseUri/$folderName")
-    }
-
-    suspend fun createDateStructure(baseUri: String, cameraName: String, date: LocalDateTime): Result<String> {
-        delay(100)
-        val datePath = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
-        return Result.success("$baseUri/$cameraName/$datePath")
-    }
-
-    suspend fun handleStorageFailure(failedUri: String, fallbackUri: String): Result<String> {
-        delay(100)
-        return Result.success(fallbackUri)
-    }
-}
-
-class SafFileWriter {
-    suspend fun writeFile(folderUri: String, fileName: String, data: ByteArray): Result<Unit> {
-        delay(50)
-        return if (folderUri.contains("revoked")) {
-            Result.failure(UriRevokedException("URI foi revogada"))
-        } else {
-            Result.success(Unit)
-        }
-    }
-
-    suspend fun readFile(folderUri: String, fileName: String): Result<ByteArray> {
-        delay(50)
-        return Result.success("Test video content".toByteArray())
-    }
-
-    suspend fun writeMetadata(folderUri: String, fileName: String, metadata: VideoMetadata): Result<Unit> {
-        delay(50)
-        return Result.success(Unit)
-    }
-
-    suspend fun recoverInterruptedWrite(folderUri: String, fileName: String, partialData: ByteArray): Result<Unit> {
-        delay(100)
-        return Result.success(Unit)
-    }
-}
-
-class RetentionManager {
-    suspend fun setPolicy(folderUri: String, policy: RetentionPolicy): Result<Unit> {
-        delay(50)
-        return Result.success(Unit)
-    }
-
-    suspend fun performCleanup(folderUri: String): Result<CleanupReport> {
-        delay(200)
-        return Result.success(CleanupReport(filesDeleted = 5, spaceFreed = 1024 * 1024 * 100L))
-    }
-
-    suspend fun createBackup(sourceUri: String, backupUri: String): Result<Unit> {
-        delay(500)
-        return Result.success(Unit)
-    }
-}
-
-class ShareManager {
-    suspend fun shareFile(folderUri: String, fileName: String): Result<ShareResult> {
-        delay(100)
-        return Result.success(ShareResult("share_intent_data"))
-    }
-
-    suspend fun shareMultipleFiles(folderUri: String, fileNames: List<String>): Result<ShareResult> {
-        delay(150)
-        return Result.success(ShareResult("multiple_share_intent_data"))
-    }
-
-    suspend fun exportToFormat(folderUri: String, sourceFileName: String, format: String): Result<String> {
-        delay(200)
-        return Result.success("$sourceFileName.$format")
-    }
-}
-
-class FileIndexer {
-    suspend fun indexFolder(folderUri: String): Result<Unit> {
-        delay(100)
-        return Result.success(Unit)
-    }
-
-    suspend fun searchFiles(folderUri: String, cameraName: String, dateRange: DateRange): List<String> {
-        delay(50)
-        return listOf("TestCamera_2024-01-15_143022.mp4", "TestCamera_2024-01-15_143156.mp4")
-    }
-
-    fun getFileCount(folderUri: String): Int {
-        return 10
-    }
-
-    suspend fun refreshIndex(folderUri: String): Result<Unit> {
-        delay(50)
-        return Result.success(Unit)
-    }
-}
-
-class StorageDetector {
-    suspend fun detectAvailableStorages(): List<StorageInfo> {
-        delay(100)
-        return listOf(
-            StorageInfo("content://internal", StorageType.INTERNAL, 64L * 1024 * 1024 * 1024L),
-            StorageInfo("content://external", StorageType.EXTERNAL, 128L * 1024 * 1024 * 1024L),
-            StorageInfo("content://usb", StorageType.USB, 32L * 1024 * 1024 * 1024L)
-        )
-    }
-}
-
-// Data classes
-data class VideoMetadata(
-    val cameraName: String,
-    val timestamp: LocalDateTime,
-    val duration: Long,
-    val resolution: String,
-    val frameRate: Double,
-    val bitrate: Long
-)
-
-data class RetentionPolicy(
-    val maxAgeDays: Int,
-    val maxSizeBytes: Long,
-    val cleanupEnabled: Boolean
-)
-
-data class CleanupReport(
-    val filesDeleted: Int,
-    val spaceFreed: Long
-)
-
-data class ShareResult(
-    val shareIntent: String
-)
-
-data class DateRange(
-    val start: LocalDateTime,
-    val end: LocalDateTime
-)
-
-data class StorageInfo(
-    val uri: String,
-    val type: StorageType,
-    val availableSpace: Long
-)
-
-enum class StorageType {
-    INTERNAL, EXTERNAL, USB, NETWORK
-}
-
-// Exceptions
-class UriRevokedException(message: String) : Exception(message)

@@ -59,7 +59,7 @@ jobs:
         timeout-minutes: 10
         run: |
           echo "🧪 Executando testes unitários..."
-          ./gradlew :app:testDebugUnitTest --info
+          ./gradlew :app:testDebugUnitTest :core:events:testDebugUnitTest --info
           
       - name: 📊 Generate Coverage
         timeout-minutes: 5

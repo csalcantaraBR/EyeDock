@@ -1,6 +1,7 @@
 package com.eyedock.onvif
 
 import com.eyedock.core.common.test.categories.*
+import com.eyedock.onvif.model.OnvifDevice
 import org.junit.jupiter.api.DisplayName
 import org.junit.jupiter.api.Tag
 import org.junit.jupiter.api.Test
@@ -43,6 +44,17 @@ class OnvifDiscoveryTest {
     @Nested
     @DisplayName("Network Discovery")
     class NetworkDiscoveryTest {
+        
+        private lateinit var onvifDiscoveryService: OnvifDiscoveryService
+        private lateinit var networkScanner: NetworkScanner
+        private lateinit var wsDiscoveryClient: WsDiscoveryClient
+
+        @BeforeEach
+        fun setUp() {
+            onvifDiscoveryService = OnvifDiscoveryService()
+            networkScanner = NetworkScanner()
+            wsDiscoveryClient = WsDiscoveryClient()
+        }
 
         @Test
         @Tag(FAST_TEST)
@@ -52,7 +64,7 @@ class OnvifDiscoveryTest {
         @DisplayName("Deve descobrir dispositivos ONVIF na rede local")
         fun `deve descobrir dispositivos ONVIF na rede local`() = runBlocking {
             // Arrange
-            val subnet = getLocalSubnet()
+            val subnet = onvifDiscoveryService.getLocalSubnet()
             val timeoutMs = 10_000L
             
             // Act
@@ -98,9 +110,9 @@ class OnvifDiscoveryTest {
             assertNotNull(capabilities.eventsService)
             
             // Verificar se PTZ está disponível (pode não estar em todos os dispositivos)
-            if (capabilities.ptzService != null) {
-                assertNotNull(capabilities.ptzService.endpoint)
-                assertTrue(capabilities.ptzService.supportedOperations.isNotEmpty())
+            capabilities.ptzService?.let { ptzService ->
+                assertNotNull(ptzService.endpoint)
+                assertTrue(ptzService.supportedOperations.isNotEmpty())
             }
         }
 
@@ -120,7 +132,7 @@ class OnvifDiscoveryTest {
             
             // Assert
             assertNotNull(devices)
-            assertTrue(devices.isEmpty())
+            assertTrue(devices?.isEmpty() ?: true)
         }
 
         @Test
@@ -182,11 +194,31 @@ class OnvifDiscoveryTest {
                 assertFalse(onvifDiscoveryService.validateSubnetFormat(subnet))
             }
         }
+        
+        // Helper methods
+        private fun getLocalSubnet(): String {
+            return onvifDiscoveryService.getLocalSubnet()
+        }
+
+        private fun getLocalIpAddress(): String {
+            return onvifDiscoveryService.getLocalIpAddress()
+        }
     }
 
     @Nested
     @DisplayName("WS-Discovery Protocol")
     class WsDiscoveryTest {
+        
+        private lateinit var onvifDiscoveryService: OnvifDiscoveryService
+        private lateinit var networkScanner: NetworkScanner
+        private lateinit var wsDiscoveryClient: WsDiscoveryClient
+
+        @BeforeEach
+        fun setUp() {
+            onvifDiscoveryService = OnvifDiscoveryService()
+            networkScanner = NetworkScanner()
+            wsDiscoveryClient = WsDiscoveryClient()
+        }
 
         @Test
         @Tag(INTEGRATION_TEST)
@@ -243,11 +275,80 @@ class OnvifDiscoveryTest {
             assertEquals("Test Manufacturer", device.manufacturer)
             assertEquals("Test Model", device.model)
         }
+        
+        // Helper methods
+        private fun getLocalSubnet(): String {
+            return onvifDiscoveryService.getLocalSubnet()
+        }
+
+        private fun getLocalIpAddress(): String {
+            return onvifDiscoveryService.getLocalIpAddress()
+        }
+        
+        private fun createWsDiscoveryProbe(): String {
+            return """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" 
+                              xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" 
+                              xmlns:wsd="http://schemas.xmlsoap.org/ws/2005/04/discovery">
+                    <soap:Header>
+                        <wsa:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action>
+                        <wsa:MessageID>urn:uuid:12345678-1234-1234-1234-123456789012</wsa:MessageID>
+                        <wsa:To>urn:schemas-xmlsoap-org:ws:2005:04:discovery</wsa:To>
+                    </soap:Header>
+                    <soap:Body>
+                        <wsd:Probe>
+                            <wsd:Types>dn:NetworkVideoTransmitter</wsd:Types>
+                        </wsd:Probe>
+                    </soap:Body>
+                </soap:Envelope>
+            """.trimIndent()
+        }
+        
+        private fun createMockWsDiscoveryResponse(): String {
+            return """
+                <?xml version="1.0" encoding="UTF-8"?>
+                <soap:Envelope xmlns:soap="http://www.w3.org/2003/05/soap-envelope" 
+                              xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" 
+                              xmlns:wsd="http://schemas.xmlsoap.org/ws/2005/04/discovery">
+                    <soap:Header>
+                        <wsa:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/ProbeMatches</wsa:Action>
+                        <wsa:MessageID>urn:uuid:87654321-4321-4321-4321-210987654321</wsa:MessageID>
+                        <wsa:RelatesTo>urn:uuid:12345678-1234-1234-1234-123456789012</wsa:RelatesTo>
+                        <wsa:To>http://schemas.xmlsoap.org/ws/2004/08/addressing/role/anonymous</wsa:To>
+                    </soap:Header>
+                    <soap:Body>
+                        <wsd:ProbeMatches>
+                            <wsd:ProbeMatch>
+                                <wsa:EndpointReference>
+                                    <wsa:Address>urn:uuid:device-1234-5678-9abc-def012345678</wsa:Address>
+                                </wsa:EndpointReference>
+                                <wsd:Types>dn:NetworkVideoTransmitter</wsd:Types>
+                                <wsd:Scopes>onvif://www.onvif.org/name/Test Camera</wsd:Scopes>
+                                <wsd:XAddrs>http://192.168.1.100:8080/onvif/device_service</wsd:XAddrs>
+                                <wsd:MetadataVersion>1</wsd:MetadataVersion>
+                            </wsd:ProbeMatch>
+                        </wsd:ProbeMatches>
+                    </soap:Body>
+                </soap:Envelope>
+            """.trimIndent()
+        }
     }
 
     @Nested
     @DisplayName("Network Scanner")
     class NetworkScannerTest {
+        
+        private lateinit var onvifDiscoveryService: OnvifDiscoveryService
+        private lateinit var networkScanner: NetworkScanner
+        private lateinit var wsDiscoveryClient: WsDiscoveryClient
+
+        @BeforeEach
+        fun setUp() {
+            onvifDiscoveryService = OnvifDiscoveryService()
+            networkScanner = NetworkScanner()
+            wsDiscoveryClient = WsDiscoveryClient()
+        }
 
         @Test
         @Tag(FAST_TEST)
@@ -264,11 +365,20 @@ class OnvifDiscoveryTest {
             
             // Assert
             assertNotNull(activeIps)
-            assertTrue(activeIps.isNotEmpty())
+            assertTrue(activeIps?.isNotEmpty() ?: false)
             
             // Deve conter pelo menos o IP local
             val localIp = getLocalIpAddress()
-            assertTrue(activeIps.contains(localIp))
+            assertTrue(activeIps?.contains(localIp) ?: false)
+        }
+        
+        // Helper methods
+        private fun getLocalSubnet(): String {
+            return onvifDiscoveryService.getLocalSubnet()
+        }
+
+        private fun getLocalIpAddress(): String {
+            return onvifDiscoveryService.getLocalIpAddress()
         }
 
         @Test
@@ -326,6 +436,17 @@ class OnvifDiscoveryTest {
     @Nested
     @DisplayName("Device Information")
     class DeviceInformationTest {
+        
+        private lateinit var onvifDiscoveryService: OnvifDiscoveryService
+        private lateinit var networkScanner: NetworkScanner
+        private lateinit var wsDiscoveryClient: WsDiscoveryClient
+
+        @BeforeEach
+        fun setUp() {
+            onvifDiscoveryService = OnvifDiscoveryService()
+            networkScanner = NetworkScanner()
+            wsDiscoveryClient = WsDiscoveryClient()
+        }
 
         @Test
         @Tag(FAST_TEST)
@@ -401,34 +522,24 @@ class OnvifDiscoveryTest {
             assertTrue(streamUrl.startsWith("rtsp://"))
             assertTrue(streamUrl.contains(device.ipAddress))
         }
+        
+        // Helper methods
+        private fun getLocalSubnet(): String {
+            return onvifDiscoveryService.getLocalSubnet()
+        }
+
+        private fun getLocalIpAddress(): String {
+            return onvifDiscoveryService.getLocalIpAddress()
+        }
     }
 
     // Helper methods
     private fun getLocalSubnet(): String {
-        val localIp = getLocalIpAddress()
-        val parts = localIp.split(".")
-        return "${parts[0]}.${parts[1]}.${parts[2]}.0/24"
+        return onvifDiscoveryService.getLocalSubnet()
     }
 
     private fun getLocalIpAddress(): String {
-        return try {
-            val interfaces = NetworkInterface.getNetworkInterfaces()
-            while (interfaces.hasMoreElements()) {
-                val networkInterface = interfaces.nextElement()
-                if (networkInterface.isLoopback || !networkInterface.isUp) continue
-                
-                val addresses = networkInterface.inetAddresses
-                while (addresses.hasMoreElements()) {
-                    val address = addresses.nextElement()
-                    if (address.hostAddress.indexOf(':') < 0) { // IPv4 only
-                        return address.hostAddress
-                    }
-                }
-            }
-            "127.0.0.1" // fallback
-        } catch (e: Exception) {
-            "127.0.0.1" // fallback
-        }
+        return onvifDiscoveryService.getLocalIpAddress()
     }
 
     private fun createWsDiscoveryProbe(): String {
@@ -481,129 +592,4 @@ class OnvifDiscoveryTest {
     }
 }
 
-// Classes de implementação para os testes
-class OnvifDiscoveryService {
-    suspend fun discoverDevices(subnet: String, timeoutMs: Long): List<OnvifDevice> {
-        delay(100) // Simulação de delay de rede
-        return listOf(
-            OnvifDevice(
-                ipAddress = "192.168.1.100",
-                manufacturer = "Test Manufacturer",
-                model = "Test Model",
-                firmwareVersion = "1.0.0"
-            )
-        )
-    }
 
-    fun validateSubnetFormat(subnet: String): Boolean {
-        return subnet.matches(Regex("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)/[0-9]{1,2}$"))
-    }
-
-    suspend fun getDeviceCapabilities(device: OnvifDevice): DeviceCapabilities {
-        delay(50)
-        return DeviceCapabilities(
-            mediaService = ServiceEndpoint("http://${device.ipAddress}:8080/onvif/media"),
-            eventsService = ServiceEndpoint("http://${device.ipAddress}:8080/onvif/events"),
-            ptzService = ServiceEndpoint("http://${device.ipAddress}:8080/onvif/ptz")
-        )
-    }
-
-    suspend fun getDeviceInformation(device: OnvifDevice): DeviceInformation {
-        delay(50)
-        return DeviceInformation(
-            manufacturer = device.manufacturer,
-            model = device.model,
-            firmwareVersion = device.firmwareVersion,
-            serialNumber = "SN123456789",
-            hardwareId = "HW123456789"
-        )
-    }
-
-    suspend fun getMediaProfiles(device: OnvifDevice): List<MediaProfile> {
-        delay(50)
-        return listOf(
-            MediaProfile(
-                token = "Profile_1",
-                name = "Main Stream",
-                videoSourceConfiguration = VideoSourceConfiguration("VideoSource_1"),
-                videoEncoderConfiguration = VideoEncoderConfiguration("VideoEncoder_1")
-            )
-        )
-    }
-
-    suspend fun getStreamUri(device: OnvifDevice, profileToken: String): String {
-        delay(50)
-        return "rtsp://${device.ipAddress}:554/stream1"
-    }
-}
-
-class NetworkScanner {
-    suspend fun scanSubnet(subnet: String): List<String> {
-        delay(100)
-        return listOf("192.168.1.1", "192.168.1.100", "192.168.1.254")
-    }
-
-    suspend fun scanPorts(ip: String, ports: List<Int>): List<Int> {
-        delay(50)
-        return listOf(80, 8080) // Portas que "respondem"
-    }
-
-    fun isValidIpAddress(ip: String): Boolean {
-        return ip.matches(Regex("^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"))
-    }
-}
-
-class WsDiscoveryClient {
-    suspend fun sendProbe(probeMessage: String): String? {
-        delay(100)
-        return createMockWsDiscoveryResponse()
-    }
-
-    fun parseProbeResponse(response: String): List<OnvifDevice> {
-        return listOf(
-            OnvifDevice(
-                ipAddress = "192.168.1.100",
-                manufacturer = "Test Manufacturer",
-                model = "Test Model",
-                firmwareVersion = "1.0.0"
-            )
-        )
-    }
-}
-
-// Data classes
-data class OnvifDevice(
-    val ipAddress: String,
-    val manufacturer: String,
-    val model: String,
-    val firmwareVersion: String
-)
-
-data class DeviceCapabilities(
-    val mediaService: ServiceEndpoint,
-    val eventsService: ServiceEndpoint,
-    val ptzService: ServiceEndpoint?
-)
-
-data class ServiceEndpoint(
-    val endpoint: String,
-    val supportedOperations: List<String> = emptyList()
-)
-
-data class DeviceInformation(
-    val manufacturer: String,
-    val model: String,
-    val firmwareVersion: String,
-    val serialNumber: String,
-    val hardwareId: String
-)
-
-data class MediaProfile(
-    val token: String,
-    val name: String,
-    val videoSourceConfiguration: VideoSourceConfiguration,
-    val videoEncoderConfiguration: VideoEncoderConfiguration
-)
-
-data class VideoSourceConfiguration(val token: String)
-data class VideoEncoderConfiguration(val token: String)

@@ -9,10 +9,12 @@ import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
+import androidx.camera.core.ExperimentalGetImage
 import com.eyedock.app.navigation.EyeDockNavigation
 import com.eyedock.app.ui.theme.EyeDockTheme
 
 class MainActivity : ComponentActivity() {
+    @ExperimentalGetImage
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
@@ -29,6 +31,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
+@ExperimentalGetImage
 fun EyeDockApp() {
     val navController = rememberNavController()
     EyeDockNavigation(navController = navController)

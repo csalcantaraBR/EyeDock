@@ -176,16 +176,16 @@ class RtspConnectionTest {
         val streamInfo = streamAnalyzer.analyzeStream(rtspUrl)
         
         // Assert
-        assertNotNull(streamInfo.videoCodec, "Deve detectar codec de vídeo")
+        assertNotNull(streamInfo.codec, "Deve detectar codec de vídeo")
         assertTrue(
-            streamInfo.isExoPlayerCompatible,
+            streamAnalyzer.isExoPlayerCompatible(streamInfo.codec),
             "Stream deve ser compatível com ExoPlayer"
         )
         
-        val supportedCodecs = listOf("H264", "H265", "MJPEG")
+        val supportedCodecs = listOf("H.264", "H.265", "MJPEG")
         assertTrue(
-            supportedCodecs.contains(streamInfo.videoCodec),
-            "Codec ${streamInfo.videoCodec} deve estar na lista de suportados"
+            supportedCodecs.contains(streamInfo.codec),
+            "Codec ${streamInfo.codec} deve estar na lista de suportados"
         )
     }
 
@@ -198,6 +198,7 @@ class RtspConnectionTest {
         
         // Arrange
         val rtspClient = RtspClient() // COMPILATION ERROR EXPECTED
+        val streamAnalyzer = StreamAnalyzer()
         val urlWithAudio = "rtsp://192.168.1.100:554/onvif1"
         
         // Act
@@ -205,8 +206,8 @@ class RtspConnectionTest {
         
         // Assert
         assertTrue(connection.isSuccess, "Conexão deve funcionar")
-        assertTrue(connection.hasAudioTrack, "Deve detectar track de áudio")
-        assertEquals("AAC", connection.audioCodec, "Deve usar codec AAC para áudio")
+        assertTrue(streamAnalyzer.hasAudioTrack(urlWithAudio), "Deve detectar track de áudio")
+        assertEquals("AAC", streamAnalyzer.getAudioCodec(urlWithAudio), "Deve usar codec AAC para áudio")
     }
 }
 

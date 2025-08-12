@@ -9,6 +9,7 @@ import com.eyedock.app.data.qr.QrParserImpl
 import com.eyedock.app.domain.interfaces.Player
 import com.eyedock.app.data.player.ExoPlayerImpl
 import com.eyedock.app.data.repository.CloudBackupRepository
+import androidx.media3.common.util.UnstableApi
 
 /**
  * Manual dependency injection module for the EyeDock application.
@@ -25,6 +26,7 @@ object AppModule {
     /**
      * Initialize the database and all dependencies
      */
+    @UnstableApi
     fun initialize(context: Context) {
         if (database == null) {
             database = CameraDatabase.getDatabase(context)

@@ -14,12 +14,14 @@ import com.eyedock.app.screens.ManualSetupScreen
 import com.eyedock.app.screens.NetworkDiscoveryScreen
 import com.eyedock.app.screens.CloudBackupScreen
 import com.eyedock.app.utils.Logger
+import androidx.camera.core.ExperimentalGetImage
 
 object EyeDockNavigation {
     const val TAG = "EyeDockNavigation"
 }
 
 @Composable
+@ExperimentalGetImage
 fun EyeDockNavigation(
     navController: NavHostController
 ) {

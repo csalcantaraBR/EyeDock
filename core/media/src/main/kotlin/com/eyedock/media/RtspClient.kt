@@ -2,107 +2,82 @@ package com.eyedock.media
 
 import kotlinx.coroutines.delay
 import java.util.regex.Pattern
-import javax.inject.Inject
-import javax.inject.Singleton
 
-/**
- * RtspClient para EyeDock
- * 
- * Gerencia conexões RTSP com câmeras
- */
-@Singleton
-class RtspClient @Inject constructor() {
-
-    companion object {
-        private val RTSP_URL_PATTERN = Pattern.compile(
-            "^rtsp://([0-9]{1,3}\\.){3}[0-9]{1,3}:[0-9]+/.+$"
-        )
+class RtspClient {
+    
+    fun isValidRtspUrl(url: String): Boolean {
+        val rtspPattern = Pattern.compile("^rtsp://[^\\s]+$")
+        return rtspPattern.matcher(url).matches()
     }
-
-    /**
-     * Valida se uma URL é RTSP válida
-     */
-    fun isValidRtspUrl(rtspUrl: String): Boolean {
-        return RTSP_URL_PATTERN.matcher(rtspUrl).matches()
-    }
-
-    /**
-     * Conecta a um stream RTSP
-     */
-    suspend fun connect(rtspUrl: String): ConnectionResult {
-        // Validar URL
-        if (!RTSP_URL_PATTERN.matcher(rtspUrl).matches()) {
-            throw IllegalArgumentException("URL RTSP inválida: $rtspUrl")
-        }
-
-        // Simular tempo de conexão
-        delay(1500L) // Menos que 2s para passar no teste
-
-        // Simular conexão baseada na URL
-        return when {
-            rtspUrl.contains("10.0.0") -> {
-                // IPs 10.x.x.x simulam falha
-                ConnectionResult(
-                    isSuccess = false,
-                    errorMessage = "Failed to connect: Connection timeout",
-                    hasAudioTrack = false,
-                    audioCodec = null
-                )
-            }
-            rtspUrl.contains("/onvif1") -> {
-                // onvif1 sempre funciona
-                ConnectionResult(
-                    isSuccess = true,
-                    errorMessage = null,
-                    hasAudioTrack = true,
-                    audioCodec = "AAC"
-                )
-            }
-            else -> {
-                // Outros paths funcionam mas sem áudio
-                ConnectionResult(
-                    isSuccess = true,
-                    errorMessage = null,
-                    hasAudioTrack = false,
-                    audioCodec = null
-                )
-            }
-        }
-    }
-
-    /**
-     * Monitora estabilidade da conexão
-     */
-    suspend fun monitorStability(durationMs: Long): StabilityResult {
-        // Simular monitoramento (acelerado para testes)
-        delay(minOf(durationMs / 100, 3000L)) // Acelerar para testes
+    
+    suspend fun connect(url: String): ConnectionResult {
+        delay(1000) // Simular tempo de conexão
         
+        return if (isValidRtspUrl(url)) {
+            ConnectionResult.Success(
+                connectionId = "conn_${System.currentTimeMillis()}",
+                url = url,
+                isConnected = true
+            )
+        } else {
+            ConnectionResult.Failure("URL RTSP inválida: $url")
+        }
+    }
+    
+    suspend fun disconnect(connectionId: String): Boolean {
+        delay(500) // Simular tempo de desconexão
+        return true
+    }
+    
+    suspend fun getStreamInfo(url: String): StreamInfo? {
+        delay(800) // Simular tempo de análise
+        
+        return if (isValidRtspUrl(url)) {
+            StreamInfo(
+                url = url,
+                codec = "H.264",
+                resolution = "1920x1080",
+                frameRate = 25,
+                bitrate = 2048,
+                isValid = true
+            )
+        } else null
+    }
+    
+    suspend fun monitorStability(durationMs: Long): StabilityResult {
+        delay(durationMs)
         return StabilityResult(
             wasStable = true,
-            uptimePercentage = 99.2,
-            disconnectionCount = 1,
-            averageReconnectTimeMs = 250L
+            uptimePercentage = 99.5,
+            disconnectionCount = 0
         )
     }
 }
 
-/**
- * Resultado de uma conexão RTSP
- */
-data class ConnectionResult(
-    val isSuccess: Boolean,
-    val errorMessage: String? = null,
-    val hasAudioTrack: Boolean = false,
-    val audioCodec: String? = null,
-    val connectionTimeMs: Long = 1500L
-)
-
-/**
- * Resultado de monitoramento de estabilidade
- */
 data class StabilityResult(
     val wasStable: Boolean,
     val uptimePercentage: Double,
-    val disconnectionCount: Int,
-    val averageReconnectTimeMs: Long
+    val disconnectionCount: Int
+)
+
+sealed class ConnectionResult {
+    data class Success(
+        val connectionId: String,
+        val url: String,
+        val isConnected: Boolean
+    ) : ConnectionResult()
+    
+    data class Failure(val error: String) : ConnectionResult()
+    
+    val isSuccess: Boolean
+        get() = this is Success
+}
+
+data class StreamInfo(
+    val url: String,
+    val codec: String,
+    val resolution: String,
+    val frameRate: Int,
+    val bitrate: Int,
+    val isValid: Boolean
 )

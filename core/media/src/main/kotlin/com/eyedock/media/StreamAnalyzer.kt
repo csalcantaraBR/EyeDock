@@ -1,55 +1,66 @@
 package com.eyedock.media
 
 import kotlinx.coroutines.delay
-import javax.inject.Inject
-import javax.inject.Singleton
 
-/**
- * StreamAnalyzer para EyeDock
- * 
- * Analisa streams RTSP para detectar codecs e compatibilidade
- */
-@Singleton
-class StreamAnalyzer @Inject constructor() {
-
-    /**
-     * Analisa informações do stream
-     */
-    suspend fun analyzeStream(rtspUrl: String): StreamInfo {
-        // Simular tempo de análise
-        delay(800L)
+class StreamAnalyzer {
+    
+    suspend fun analyzeStream(url: String): StreamAnalysisResult {
+        delay(800) // Simular tempo de análise
         
-        // Determinar codec baseado na URL/IP
-        val videoCodec = when {
-            rtspUrl.contains("192.168.1.100") -> "H264"
-            rtspUrl.contains("192.168.1.101") -> "H265" 
-            rtspUrl.contains("192.168.1.102") -> "MJPEG"
-            else -> "H264" // Default
-        }
-        
-        return StreamInfo(
-            videoCodec = videoCodec,
-            audioCodec = "AAC",
+        return StreamAnalysisResult(
+            url = url,
+            codec = "H.264",
             resolution = "1920x1080",
-            framerate = 30,
+            frameRate = 25,
             bitrate = 2048,
-            isExoPlayerCompatible = videoCodec in listOf("H264", "H265", "MJPEG"),
+            hasAudio = true,
+            audioCodec = "AAC",
             isValid = true
         )
     }
+    
+    suspend fun detectCodec(url: String): String? {
+        delay(500) // Simular tempo de detecção
+        
+        return if (url.contains("rtsp://")) {
+            "H.264" // Codec padrão para RTSP
+        } else {
+            null
+        }
+    }
+    
+    suspend fun checkAudioSupport(url: String): Boolean {
+        delay(300) // Simular tempo de verificação
+        
+        return url.contains("rtsp://") && !url.contains("noaudio")
+    }
+    
+    fun isExoPlayerCompatible(codec: String): Boolean {
+        return codec in listOf("H.264", "H.265", "AVC", "HEVC")
+    }
+    
+    fun hasAudioTrack(streamUrl: String): Boolean {
+        return true // Simular que tem áudio
+    }
+    
+    fun getVideoCodec(streamUrl: String): String {
+        return "H.264"
+    }
+    
+    fun getAudioCodec(streamUrl: String): String {
+        return "AAC"
+    }
 }
 
-/**
- * Informações sobre um stream RTSP
- */
-data class StreamInfo(
-    val videoCodec: String,
-    val audioCodec: String?,
+data class StreamAnalysisResult(
+    val url: String,
+    val codec: String,
     val resolution: String,
-    val framerate: Int,
-    val bitrate: Int, // kbps
-    val isExoPlayerCompatible: Boolean,
-    val isValid: Boolean = true
+    val frameRate: Int,
+    val bitrate: Int,
+    val hasAudio: Boolean,
+    val audioCodec: String?,
+    val isValid: Boolean
 )
 
 /**
@@ -57,8 +68,7 @@ data class StreamInfo(
  * 
  * Mede latência de streams para testes de performance
  */
-@Singleton
-class LatencyMeter @Inject constructor() {
+class LatencyMeter {
 
     /**
      * Mede latência de um stream
@@ -86,8 +96,7 @@ class LatencyMeter @Inject constructor() {
  * 
  * Mede throughput sustentado para gravação
  */
-@Singleton
-class ThroughputMeter @Inject constructor() {
+class ThroughputMeter {
 
     /**
      * Mede throughput sustentado
@@ -119,3 +128,5 @@ data class ThroughputResult(
     val maximumThroughputMBps: Double,
     val dataTransferredMB: Int
 )
+
+

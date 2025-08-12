@@ -1,6 +1,7 @@
 package com.eyedock.app
 
 import android.app.Application
+import androidx.media3.common.util.UnstableApi
 import com.eyedock.app.di.AppModule
 
 /**
@@ -9,6 +10,7 @@ import com.eyedock.app.di.AppModule
  */
 class EyeDockApplication : Application() {
     
+    @UnstableApi
     override fun onCreate() {
         super.onCreate()
         

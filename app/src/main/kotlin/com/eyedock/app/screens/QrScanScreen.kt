@@ -13,12 +13,14 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.camera.core.ExperimentalGetImage
 import com.eyedock.app.camera.QrScannerView
 import com.eyedock.app.viewmodels.QrScanViewModel
 import com.eyedock.app.viewmodels.QrScanUiState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
+@ExperimentalGetImage
 fun QrScanScreen(
     onNavigateBack: () -> Unit,
     onQrCodeScanned: (String) -> Unit,

@@ -151,7 +151,8 @@ class StorageSafTest {
         // Assert
         assertNotNull(cleanupResult, "Deve retornar resultado de limpeza")
         assertTrue(cleanupResult.wasEnforced, "Política deve ser aplicada")
-        assertTrue(cleanupResult.filesDeleted >= 0, "Número de arquivos deletados deve ser ≥ 0")
+        assertTrue(cleanupResult is RetentionEnforcementResult.Success, "Deve retornar sucesso")
+        assertTrue((cleanupResult as RetentionEnforcementResult.Success).filesDeleted >= 0, "Número de arquivos deletados deve ser ≥ 0")
     }
 
     @Test
@@ -246,7 +247,6 @@ class StorageSafTest {
         assertTrue(availableStorages.isNotEmpty(), "Deve encontrar pelo menos uma opção")
         
         // Verificar tipos esperados
-        val storageTypes = availableStorages.map { it.type }
         val expectedTypes = listOf(
             StorageType.INTERNAL,
             StorageType.EXTERNAL_SD,
@@ -255,8 +255,8 @@ class StorageSafTest {
         )
         
         assertTrue(
-            storageTypes.any { it in expectedTypes },
-            "Deve suportar tipos de storage esperados: $storageTypes"
+            availableStorages.any { it in expectedTypes },
+            "Deve suportar tipos de storage esperados: $availableStorages"
         )
     }
 }

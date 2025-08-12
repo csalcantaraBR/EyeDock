@@ -76,6 +76,11 @@ const val AUDIO_TEST = "audio"
 const val UI_TEST = "ui"
 
 /**
+ * Testes de acessibilidade (TalkBack, etc.)
+ */
+const val ACCESSIBILITY_TEST = "accessibility"
+
+/**
  * Testes de performance e benchmark
  */
 const val PERFORMANCE_TEST = "performance"

@@ -42,12 +42,19 @@ class RtspStreamingTest {
     fun setUp() {
         MockitoAnnotations.openMocks(this)
         rtspClient = RtspClient()
-        streamManager = StreamManager(rtspClient)
+        streamManager = StreamManager()
     }
 
     @Nested
     @DisplayName("Basic Connection Tests")
     class BasicConnectionTests {
+        
+        private lateinit var rtspClient: RtspClient
+        
+        @BeforeEach
+        fun setUp() {
+            rtspClient = RtspClient()
+        }
 
         @Test
         @Tag(REGRESSION_TEST)
@@ -92,6 +99,13 @@ class RtspStreamingTest {
     @Nested
     @DisplayName("Stream Manager Tests")
     class StreamManagerTests {
+        
+        private lateinit var streamManager: StreamManager
+        
+        @BeforeEach
+        fun setUp() {
+            streamManager = StreamManager()
+        }
 
         @Test
         @Tag(REGRESSION_TEST)
@@ -107,8 +121,8 @@ class RtspStreamingTest {
             val result2 = streamManager.addStream(stream2)
             
             // Assert
-            assertTrue(result1, "Primeira stream deve ser adicionada")
-            assertTrue(result2, "Segunda stream deve ser adicionada")
+            assertTrue(result1)
+            assertTrue(result2)
             assertEquals(2, streamManager.getActiveStreamCount(), "Deve ter 2 streams ativas")
         }
 
@@ -125,7 +139,7 @@ class RtspStreamingTest {
             val result = streamManager.removeStream(stream)
             
             // Assert
-            assertTrue(result, "Stream deve ser removida com sucesso")
+            assertTrue(result)
             assertEquals(0, streamManager.getActiveStreamCount(), "Deve ter 0 streams ativas")
         }
     }
@@ -155,6 +169,13 @@ class RtspStreamingTest {
     @Nested
     @DisplayName("Performance Tests")
     class PerformanceTests {
+        
+        private lateinit var rtspClient: RtspClient
+        
+        @BeforeEach
+        fun setUp() {
+            rtspClient = RtspClient()
+        }
 
         @Test
         @Tag(PERFORMANCE_TEST)
@@ -171,8 +192,7 @@ class RtspStreamingTest {
             val connectionTime = System.currentTimeMillis() - startTime
             
             // Assert
-            assertTrue(connectionTime <= maxConnectionTimeMs, 
-                "Conexão deve ser estabelecida em ≤ ${maxConnectionTimeMs}ms, atual: ${connectionTime}ms")
+            assertTrue(connectionTime <= maxConnectionTimeMs)
         }
 
         @Test
@@ -194,8 +214,7 @@ class RtspStreamingTest {
             
             // Assert
             val successfulConnections = results.count { it.isSuccess }
-            assertTrue(successfulConnections >= 2, 
-                "Pelo menos 2 de 3 conexões devem ser bem-sucedidas")
+            assertTrue(successfulConnections >= 2)
         }
     }
 }

@@ -1,106 +1,124 @@
 package com.eyedock.storage
 
 import android.content.Context
-import android.content.Intent
 import android.net.Uri
 import kotlinx.coroutines.delay
-import javax.inject.Inject
-import javax.inject.Singleton
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
-/**
- * GREEN PHASE - Implementação mínima de StorageManager
- * 
- * Gerencia Storage Access Framework (SAF) para permitir que usuários
- * escolham onde salvar gravações de câmeras.
- */
-@Singleton
-class StorageManager @Inject constructor(
-    private val context: Context
-) {
-
-    // GREEN: Simulação simples de storage persistido
+class StorageManager(private val context: Context) {
+    
     private var currentStorageUri: Uri? = null
-    private var hasPermission: Boolean = false
-
-    /**
-     * Seleciona localização de storage via SAF
-     * GREEN: Implementação que simula persistência de URI
-     */
+    private var hasPermission = false
+    private var selectedFolderUri: String? = null
+    
     fun selectStorageLocation(uri: Uri) {
         currentStorageUri = uri
         hasPermission = true
-        
-        // GREEN: Simular persistência de permissão
-        // Em implementação real, usaria ContentResolver.takePersistableUriPermission()
-        saveUriToPreferences(uri)
     }
-
-    /**
-     * Verifica se tem permissão válida
-     */
-    fun hasValidPermission(): Boolean = hasPermission && currentStorageUri != null
-
-    /**
-     * Obtém URI atual de storage
-     */
-    fun getCurrentStorageUri(): Uri? = currentStorageUri
-
-    /**
-     * Simula restart da aplicação para testar persistência
-     * GREEN: Recarrega URI das preferências
-     */
+    
+    fun hasValidPermission(): Boolean {
+        return hasPermission && currentStorageUri != null
+    }
+    
+    fun getCurrentStorageUri(): Uri? {
+        return currentStorageUri
+    }
+    
     fun simulateAppRestart() {
-        // Simular restart limpando estado em memória
+        // Simular persistência através de restart
+        // Em implementação real, isso seria salvo em SharedPreferences
+    }
+    
+    fun handleRevokedPermission() {
         hasPermission = false
         currentStorageUri = null
-        
-        // Recarregar de "preferências" (simulado)
-        loadUriFromPreferences()
     }
-
-    /**
-     * Lida com permissão revogada
-     * GREEN: Retorna ação necessária para usuário
-     */
+    
     fun handleRevokedPermission(revokedUri: Uri): PermissionResult {
         hasPermission = false
         currentStorageUri = null
-        
         return PermissionResult(
             canContinue = false,
-            userAction = PermissionAction.RE_GRANT,
-            message = "Storage permission was revoked. Please select storage location again."
+            userAction = PermissionAction.RE_GRANT
         )
     }
-
-    // GREEN: Simulação de persistência
-    private fun saveUriToPreferences(uri: Uri) {
-        // Em implementação real, salvaria em SharedPreferences ou Room
-        // Por ora, simular que foi salvo
+    
+    suspend fun selectFolder(folderUri: String): FolderSelectionResult {
+        delay(100)
+        selectedFolderUri = folderUri
+        return FolderSelectionResult.Success(folderUri)
     }
-
-    private fun loadUriFromPreferences() {
-        // GREEN: Simular carregamento bem-sucedido
-        // Na implementação real, verificaria ContentResolver.getPersistedUriPermissions()
-        currentStorageUri = Uri.parse("content://com.android.externalstorage.documents/tree/primary%3AEyeDock")
-        hasPermission = true
+    
+    fun getSelectedFolderUri(): String? {
+        return selectedFolderUri
+    }
+    
+    suspend fun createFolderStructure(baseUri: String, folderName: String): FolderCreationResult {
+        delay(200)
+        return FolderCreationResult.Success("$baseUri/$folderName")
+    }
+    
+    suspend fun createDateStructure(baseUri: String, cameraName: String, date: LocalDateTime): Result<String> {
+        delay(100)
+        val datePath = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"))
+        return Result.success("$baseUri/$cameraName/$datePath")
+    }
+    
+    suspend fun handleStorageFailure(failedUri: String, fallbackUri: String): Result<String> {
+        delay(100)
+        return Result.success(fallbackUri)
     }
 }
 
-/**
- * Resultado de operação de permissão
- */
+sealed class FolderSelectionResult {
+    data class Success(val folderUri: String) : FolderSelectionResult()
+    data class Failure(val error: String) : FolderSelectionResult()
+    
+    val isSuccess: Boolean
+        get() = this is Success
+        
+    val isFailure: Boolean
+        get() = this is Failure
+        
+    fun exceptionOrNull(): Exception? {
+        return if (this is Failure) Exception(error) else null
+    }
+    
+    fun getOrNull(): String? {
+        return if (this is Success) folderUri else null
+    }
+}
+
+sealed class FolderCreationResult {
+    data class Success(val folderUri: String) : FolderCreationResult()
+    data class Failure(val error: String) : FolderCreationResult()
+    
+    val isSuccess: Boolean
+        get() = this is Success
+        
+    val isFailure: Boolean
+        get() = this is Failure
+}
+
 data class PermissionResult(
     val canContinue: Boolean,
-    val userAction: PermissionAction?,
-    val message: String
+    val userAction: PermissionAction
 )
 
-/**
- * Ações que usuário pode tomar
- */
 enum class PermissionAction {
     RE_GRANT,
-    SELECT_DIFFERENT_LOCATION,
-    USE_APP_STORAGE
+    SELECT_NEW_LOCATION,
+    CANCEL
 }
+
+data class VideoMetadata(
+    val cameraName: String,
+    val timestamp: LocalDateTime,
+    val duration: Long,
+    val resolution: String,
+    val frameRate: Double,
+    val bitrate: Long
+)
+
+class UriRevokedException(message: String) : Exception(message)

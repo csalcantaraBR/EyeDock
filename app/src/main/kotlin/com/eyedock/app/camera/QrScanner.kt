@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.Log
 import androidx.camera.core.*
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.camera.core.ExperimentalGetImage
 import androidx.camera.view.PreviewView
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -34,6 +35,7 @@ import kotlin.coroutines.suspendCoroutine
  * Implementação real para escanear QR codes de câmeras
  */
 @Composable
+@ExperimentalGetImage
 fun QrScannerView(
     onQrDetected: (String) -> Unit,
     onTorchToggle: () -> Unit,
@@ -125,6 +127,7 @@ fun QrScannerView(
 }
 
 @Composable
+@ExperimentalGetImage
 private fun CameraPreview(
     onQrDetected: (String) -> Unit,
     isTorchOn: Boolean,
@@ -188,6 +191,7 @@ private fun CameraPreview(
     )
 }
 
+@ExperimentalGetImage
 private fun processImage(
     imageProxy: ImageProxy,
     barcodeScanner: com.google.mlkit.vision.barcode.BarcodeScanner,
