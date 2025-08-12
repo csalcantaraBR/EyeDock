@@ -66,6 +66,35 @@ jobs:
                   ]
                 }
               }
+            },
+            {
+              "client_info": {
+                "mobilesdk_app_id": "1:123456789:android:test123",
+                "android_client_info": {
+                  "package_name": "com.eyedock.app.debug"
+                }
+              },
+              "oauth_client": [
+                {
+                  "client_id": "test-client-id.apps.googleusercontent.com",
+                  "client_type": 3
+                }
+              ],
+              "api_key": [
+                {
+                  "current_key": "test-api-key"
+                }
+              ],
+              "services": {
+                "appinvite_service": {
+                  "other_platform_oauth_client": [
+                    {
+                      "client_id": "test-web-client-id.apps.googleusercontent.com",
+                      "client_type": 3
+                    }
+                  ]
+                }
+              }
             }
           ]
         }
