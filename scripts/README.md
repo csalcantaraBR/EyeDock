@@ -1,148 +1,148 @@
-# 🔧 Scripts EyeDock
+# 🔧 EyeDock Scripts
 
-> **Scripts de automação para desenvolvimento e teste**
+> **Automation scripts for development and testing**
 
-## 📋 Índice dos Scripts
+## 📋 Scripts Index
 
-### 🚀 Execução
-Scripts para executar e testar o aplicativo.
+### 🚀 Execution
+Scripts to run and test the application.
 
-- [`run-app.ps1`](run-app.ps1) - Executa o aplicativo no dispositivo/emulador
-- [`quick-test.ps1`](quick-test.ps1) - Executa testes rápidos
-- [`quick-build-test.ps1`](quick-build-test.ps1) - Build e teste completo
+- [`run-app.ps1`](run-app.ps1) - Runs the application on device/emulator
+- [`quick-test.ps1`](quick-test.ps1) - Runs quick tests
+- [`quick-build-test.ps1`](quick-build-test.ps1) - Complete build and test
 
-### 🛠️ Setup & Configuração
-Scripts para configurar o ambiente de desenvolvimento.
+### 🛠️ Setup & Configuration
+Scripts to configure the development environment.
 
-- [`install-android-studio.ps1`](install-android-studio.ps1) - Instala o Android Studio
-- [`setup-avd-emulator.ps1`](setup-avd-emulator.ps1) - Configura emulador AVD
-- [`setup-local-testing.ps1`](setup-local-testing.ps1) - Setup para testes locais
+- [`install-android-studio.ps1`](install-android-studio.ps1) - Installs Android Studio
+- [`setup-avd-emulator.ps1`](setup-avd-emulator.ps1) - Configures AVD emulator
+- [`setup-local-testing.ps1`](setup-local-testing.ps1) - Setup for local testing
 
-### 🧪 Testes
-Scripts específicos para testes.
+### 🧪 Testing
+Specific testing scripts.
 
-- [`test-app-locally.ps1`](test-app-locally.ps1) - Testa o aplicativo localmente
+- [`test-app-locally.ps1`](test-app-locally.ps1) - Tests the application locally
 
-## 🚀 Como Usar
+## 🚀 How to Use
 
-### Pré-requisitos
-- PowerShell 5.1 ou superior
-- Permissões de execução de scripts habilitadas
+### Prerequisites
+- PowerShell 5.1 or higher
+- Script execution permissions enabled
 
-### Habilitar Execução de Scripts
+### Enable Script Execution
 ```powershell
-# Execute como administrador
+# Run as administrator
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-### Executar Scripts
+### Run Scripts
 ```powershell
-# Navegue para a pasta scripts
+# Navigate to scripts folder
 cd scripts
 
-# Execute um script
+# Run a script
 .\run-app.ps1
 ```
 
-## 📝 Descrição dos Scripts
+## 📝 Script Descriptions
 
 ### `run-app.ps1`
-Executa o aplicativo EyeDock no dispositivo ou emulador conectado.
+Runs the EyeDock application on connected device or emulator.
 
-**Uso:**
+**Usage:**
 ```powershell
 .\run-app.ps1
 ```
 
-**Funcionalidades:**
-- Build do projeto
-- Instalação no dispositivo
-- Execução do aplicativo
+**Features:**
+- Project build
+- Device installation
+- Application execution
 
 ### `quick-test.ps1`
-Executa testes unitários rápidos do projeto.
+Runs quick unit tests for the project.
 
-**Uso:**
+**Usage:**
 ```powershell
 .\quick-test.ps1
 ```
 
-**Funcionalidades:**
-- Execução de testes unitários
-- Relatório de resultados
-- Validação de build
+**Features:**
+- Unit test execution
+- Results reporting
+- Build validation
 
 ### `quick-build-test.ps1`
-Executa build completo e todos os testes.
+Runs complete build and all tests.
 
-**Uso:**
+**Usage:**
 ```powershell
 .\quick-build-test.ps1
 ```
 
-**Funcionalidades:**
-- Build completo do projeto
-- Testes unitários
-- Testes de integração
-- Relatório de cobertura
+**Features:**
+- Complete project build
+- Unit tests
+- Integration tests
+- Coverage report
 
 ### `install-android-studio.ps1`
-Instala o Android Studio automaticamente.
+Automatically installs Android Studio.
 
-**Uso:**
+**Usage:**
 ```powershell
 .\install-android-studio.ps1
 ```
 
-**Funcionalidades:**
-- Download do Android Studio
-- Instalação automática
-- Configuração inicial
+**Features:**
+- Android Studio download
+- Automatic installation
+- Initial configuration
 
 ### `setup-avd-emulator.ps1`
-Configura um emulador Android Virtual Device (AVD).
+Configures an Android Virtual Device (AVD) emulator.
 
-**Uso:**
+**Usage:**
 ```powershell
 .\setup-avd-emulator.ps1
 ```
 
-**Funcionalidades:**
-- Criação de AVD
-- Configuração de hardware
-- Instalação de sistema Android
+**Features:**
+- AVD creation
+- Hardware configuration
+- Android system installation
 
 ### `setup-local-testing.ps1`
-Configura o ambiente para testes locais.
+Configures the environment for local testing.
 
-**Uso:**
+**Usage:**
 ```powershell
 .\setup-local-testing.ps1
 ```
 
-**Funcionalidades:**
-- Configuração de variáveis de ambiente
-- Setup de dependências
-- Validação do ambiente
+**Features:**
+- Environment variable configuration
+- Dependency setup
+- Environment validation
 
 ### `test-app-locally.ps1`
-Executa testes completos do aplicativo localmente.
+Runs complete application tests locally.
 
-**Uso:**
+**Usage:**
 ```powershell
 .\test-app-locally.ps1
 ```
 
-**Funcionalidades:**
-- Testes unitários
-- Testes de UI
-- Testes de integração
-- Relatórios detalhados
+**Features:**
+- Unit tests
+- UI tests
+- Integration tests
+- Detailed reports
 
-## 🔧 Personalização
+## 🔧 Customization
 
-### Variáveis de Ambiente
-Os scripts usam as seguintes variáveis de ambiente:
+### Environment Variables
+The scripts use the following environment variables:
 
 ```powershell
 $env:ANDROID_HOME = "C:\Users\$env:USERNAME\AppData\Local\Android\Sdk"
@@ -150,47 +150,47 @@ $env:JAVA_HOME = "C:\Program Files\Java\jdk-17"
 $env:GRADLE_HOME = "C:\gradle-8.5"
 ```
 
-### Configuração Personalizada
-Para personalizar os scripts:
+### Custom Configuration
+To customize the scripts:
 
-1. Edite as variáveis no início de cada script
-2. Ajuste os caminhos conforme seu ambiente
-3. Modifique os parâmetros conforme necessário
+1. Edit variables at the beginning of each script
+2. Adjust paths according to your environment
+3. Modify parameters as needed
 
 ## 🐛 Troubleshooting
 
-### Problemas Comuns
+### Common Issues
 
-**Erro de execução de scripts:**
+**Script execution error:**
 ```powershell
-# Solução: Habilitar execução de scripts
+# Solution: Enable script execution
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 ```
 
-**Erro de permissão:**
+**Permission error:**
 ```powershell
-# Solução: Executar como administrador
+# Solution: Run as administrator
 Start-Process PowerShell -Verb RunAs
 ```
 
-**Erro de caminho:**
+**Path error:**
 ```powershell
-# Solução: Verificar variáveis de ambiente
+# Solution: Check environment variables
 echo $env:ANDROID_HOME
 echo $env:JAVA_HOME
 ```
 
-## 📞 Suporte
+## 📞 Support
 
-Para problemas com os scripts:
+For script issues:
 
-1. Verifique os logs de erro
-2. Confirme as variáveis de ambiente
-3. Teste em um ambiente limpo
-4. Abra uma issue no GitHub
+1. Check error logs
+2. Confirm environment variables
+3. Test in a clean environment
+4. Open an issue on GitHub
 
 ---
 
-**Última atualização**: Dezembro 2024  
-**Versão**: 1.0.0  
-**Mantido por**: Equipe EyeDock
+**Last updated**: December 2024  
+**Version**: 1.0.0  
+**Maintained by**: EyeDock Team

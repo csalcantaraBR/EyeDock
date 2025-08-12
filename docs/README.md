@@ -1,103 +1,103 @@
-# 📚 Documentação EyeDock
+# 📚 EyeDock Documentation
 
-> **Documentação completa do sistema de monitoramento de câmeras IP**
+> **Complete documentation for the IP camera monitoring system**
 
-## 📖 Índice da Documentação
+## 📖 Documentation Index
 
-### 🏗️ Arquitetura
-Documentação sobre a arquitetura e design do sistema.
+### 🏗️ Architecture
+Documentation about system architecture and design.
 
-- [`functional-requirements.md`](architecture/functional-requirements.md) - Requisitos funcionais detalhados
-- [`ux-requirements.md`](architecture/ux-requirements.md) - Requisitos de experiência do usuário
-- [`technical-requirements.md`](architecture/technical-requirements.md) - Requisitos técnicos
+- [`functional-requirements.md`](architecture/functional-requirements.md) - Detailed functional requirements
+- [`ux-requirements.md`](architecture/ux-requirements.md) - User experience requirements
+- [`technical-requirements.md`](architecture/technical-requirements.md) - Technical requirements
 
-### ⚙️ Setup & Configuração
-Guias de configuração e setup do ambiente.
+### ⚙️ Setup & Configuration
+Environment setup and configuration guides.
 
-- [`google-cloud-setup.md`](setup/google-cloud-setup.md) - Configuração do Google Cloud
-- [`google-drive-setup.md`](setup/google-drive-setup.md) - Configuração do Google Drive
-- [`local-testing-setup.md`](setup/local-testing-setup.md) - Setup para testes locais
+- [`google-cloud-setup.md`](setup/google-cloud-setup.md) - Google Cloud configuration
+- [`google-drive-setup.md`](setup/google-drive-setup.md) - Google Drive configuration
+- [`local-testing-setup.md`](setup/local-testing-setup.md) - Local testing setup
 
-### 💻 Desenvolvimento
-Documentação para desenvolvedores.
+### 💻 Development
+Documentation for developers.
 
-- [`tdd-guide.md`](development/tdd-guide.md) - Guia de Test-Driven Development
-- [`tdd-final-summary.md`](development/tdd-final-summary.md) - Resumo final do TDD
-- [`tdd-progress.md`](development/tdd-progress.md) - Progresso do TDD
-- [`implementation-plan.md`](development/implementation-plan.md) - Plano de implementação
-- [`implementation-summary.md`](development/implementation-summary.md) - Resumo da implementação
-- [`implementation-progress-summary.md`](development/implementation-progress-summary.md) - Progresso da implementação
-- [`refactoring-summary.md`](development/refactoring-summary.md) - Resumo do refactoring
+- [`tdd-guide.md`](development/tdd-guide.md) - Test-Driven Development guide
+- [`tdd-final-summary.md`](development/tdd-final-summary.md) - Final TDD summary
+- [`tdd-progress.md`](development/tdd-progress.md) - TDD progress
+- [`implementation-plan.md`](development/implementation-plan.md) - Implementation plan
+- [`implementation-summary.md`](development/implementation-summary.md) - Implementation summary
+- [`implementation-progress-summary.md`](development/implementation-progress-summary.md) - Implementation progress
+- [`refactoring-summary.md`](development/refactoring-summary.md) - Refactoring summary
 
-### 🧪 Testes
-Documentação sobre testes e qualidade.
+### 🧪 Testing
+Documentation about testing and quality.
 
-- [`complete-testing-guide.md`](testing/complete-testing-guide.md) - Guia completo de testes
-- [`test-suite-readme.md`](testing/test-suite-readme.md) - README da suíte de testes
-- [`tests.md`](testing/tests.md) - Documentação dos testes
+- [`complete-testing-guide.md`](testing/complete-testing-guide.md) - Complete testing guide
+- [`test-suite-readme.md`](testing/test-suite-readme.md) - Test suite README
+- [`tests.md`](testing/tests.md) - Test documentation
 
 ### 🚀 Deploy & CI/CD
-Documentação sobre deployment e integração contínua.
+Documentation about deployment and continuous integration.
 
-- [`deployment-pipeline.md`](deployment/deployment-pipeline.md) - Pipeline de deployment
-- [`deployment-checklist.md`](deployment/deployment-checklist.md) - Checklist de deployment
-- [`github-actions-summary.md`](deployment/github-actions-summary.md) - Resumo do GitHub Actions
-- [`github-actions-todo.md`](deployment/github-actions-todo.md) - TODO do GitHub Actions
+- [`deployment-pipeline.md`](deployment/deployment-pipeline.md) - Deployment pipeline
+- [`deployment-checklist.md`](deployment/deployment-checklist.md) - Deployment checklist
+- [`github-actions-summary.md`](deployment/github-actions-summary.md) - GitHub Actions summary
+- [`github-actions-todo.md`](deployment/github-actions-todo.md) - GitHub Actions TODO
 
-### 📋 Compliance & Políticas
-Documentação sobre compliance e políticas.
+### 📋 Compliance & Policies
+Documentation about compliance and policies.
 
-- [`compliance-audit.md`](compliance/compliance-audit.md) - Auditoria de compliance
-- [`privacy-policy.md`](compliance/privacy-policy.md) - Política de privacidade
-- [`play-store-listing.md`](compliance/play-store-listing.md) - Listagem na Play Store
+- [`compliance-audit.md`](compliance/compliance-audit.md) - Compliance audit
+- [`privacy-policy.md`](compliance/privacy-policy.md) - Privacy policy
+- [`play-store-listing.md`](compliance/play-store-listing.md) - Play Store listing
 
-## 🔍 Como Usar Esta Documentação
+## 🔍 How to Use This Documentation
 
-### Para Desenvolvedores
-1. Comece com [`architecture/functional-requirements.md`](architecture/functional-requirements.md)
-2. Leia [`development/tdd-guide.md`](development/tdd-guide.md) para entender a metodologia
-3. Configure o ambiente com os guias em [`setup/`](setup/)
-4. Execute os testes seguindo [`testing/complete-testing-guide.md`](testing/complete-testing-guide.md)
+### For Developers
+1. Start with [`architecture/functional-requirements.md`](architecture/functional-requirements.md)
+2. Read [`development/tdd-guide.md`](development/tdd-guide.md) to understand the methodology
+3. Configure the environment with guides in [`setup/`](setup/)
+4. Run tests following [`testing/complete-testing-guide.md`](testing/complete-testing-guide.md)
 
-### Para DevOps
-1. Configure o CI/CD com [`deployment/github-actions-summary.md`](deployment/github-actions-summary.md)
-2. Siga o checklist em [`deployment/deployment-checklist.md`](deployment/deployment-checklist.md)
-3. Configure o pipeline em [`deployment/deployment-pipeline.md`](deployment/deployment-pipeline.md)
+### For DevOps
+1. Configure CI/CD with [`deployment/github-actions-summary.md`](deployment/github-actions-summary.md)
+2. Follow the checklist in [`deployment/deployment-checklist.md`](deployment/deployment-checklist.md)
+3. Configure the pipeline in [`deployment/deployment-pipeline.md`](deployment/deployment-pipeline.md)
 
-### Para Compliance
-1. Revise [`compliance/compliance-audit.md`](compliance/compliance-audit.md)
-2. Configure a política de privacidade em [`compliance/privacy-policy.md`](compliance/privacy-policy.md)
-3. Prepare a listagem da Play Store em [`compliance/play-store-listing.md`](compliance/play-store-listing.md)
+### For Compliance
+1. Review [`compliance/compliance-audit.md`](compliance/compliance-audit.md)
+2. Configure privacy policy in [`compliance/privacy-policy.md`](compliance/privacy-policy.md)
+3. Prepare Play Store listing in [`compliance/play-store-listing.md`](compliance/play-store-listing.md)
 
-## 📝 Convenções
+## 📝 Conventions
 
-### Estrutura dos Arquivos
-- **kebab-case**: Todos os nomes de arquivos usam kebab-case
-- **Organização por categoria**: Arquivos organizados por área de conhecimento
-- **Links relativos**: Todos os links são relativos para facilitar navegação
+### File Structure
+- **kebab-case**: All file names use kebab-case
+- **Category organization**: Files organized by knowledge area
+- **Relative links**: All links are relative for easy navigation
 
-### Formatação
-- **Markdown**: Todos os arquivos usam Markdown
-- **Emojis**: Uso consistente de emojis para categorização visual
-- **Badges**: Badges para status e informações importantes
+### Formatting
+- **Markdown**: All files use Markdown
+- **Emojis**: Consistent emoji usage for visual categorization
+- **Badges**: Badges for status and important information
 
-## 🔄 Manutenção
+## 🔄 Maintenance
 
-### Atualizações
-- Documentação atualizada automaticamente via CI/CD
-- Revisão mensal de todos os documentos
-- Versionamento semântico para mudanças importantes
+### Updates
+- Documentation automatically updated via CI/CD
+- Monthly review of all documents
+- Semantic versioning for important changes
 
-### Contribuição
-Para contribuir com a documentação:
+### Contribution
+To contribute to the documentation:
 
-1. Crie uma branch para sua contribuição
-2. Siga as convenções de formatação
-3. Atualize este índice se necessário
-4. Abra um Pull Request
+1. Create a branch for your contribution
+2. Follow formatting conventions
+3. Update this index if necessary
+4. Open a Pull Request
 
 ---
 
-**Última atualização**: Dezembro 2024  
-**Versão**: 1.0.0  
-**Mantido por**: Equipe EyeDock
+**Last updated**: December 2024  
+**Version**: 1.0.0  
+**Maintained by**: EyeDock Team
